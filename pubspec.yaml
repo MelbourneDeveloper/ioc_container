@@ -1,5 +1,5 @@
 name: ioc_container
-description: A sample command-line application.
+description: A Dart Ioc Container
 version: 0.1.0
 homepage: https://github.com/MelbourneDeveloper/ioc_container
 

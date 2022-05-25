@@ -5,7 +5,7 @@ class IocContainer {
 
   ///Get an instance of your dependency
   T get<T>() {
-    var object = _map[T]!(this);
+    final object = _map[T]!(this);
 
     if (object is T Function(IocContainer container)) {
       return object(this);
@@ -20,10 +20,8 @@ class IocContainerBuilder {
   final Map<Type, Object Function(IocContainer container)> _map = {};
 
   ///Add a factory to the container.
-  IocContainerBuilder add<T>(T Function(IocContainer container) get) {
-    _map.putIfAbsent(T, () => get as Object Function(IocContainer container));
-    return this;
-  }
+  void add<T>(T Function(IocContainer container) get) =>
+      _map.putIfAbsent(T, () => get as Object Function(IocContainer container));
 
   ///Create an [IocContainer] from the [IocContainerBuilder].
   IocContainer toContainer() => IocContainer(
@@ -32,11 +30,9 @@ class IocContainerBuilder {
 
 extension Extensions on IocContainerBuilder {
   ///Add a singleton object dependency to the container.
-  IocContainerBuilder addSingletonObject<T>(T service) => add((i) => service);
+  void addSingletonObject<T>(T service) => add((i) => service);
 
   ///Add a singleton factory dependency to the container.
-  IocContainerBuilder addSingleton<T>(T Function(IocContainer container) func) {
-    _map.putIfAbsent(T, () => (c) => func);
-    return this;
-  }
+  void addSingleton<T>(T Function(IocContainer container) func) =>
+      _map.putIfAbsent(T, () => (c) => func);
 }

@@ -63,12 +63,12 @@ void main() {
     final a = A('a');
     final builder = IocContainerBuilder();
     builder
-        .addSingletonObject(a)
-        .add((i) => B(i.get<A>()))
-        .add((i) => C(i.get<B>()))
-        .add((i) => D(i.get<B>(), i.get<C>()));
+      ..addSingletonObject(a)
+      ..add((i) => B(i.get<A>()))
+      ..add((i) => C(i.get<B>()))
+      ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
-    var d = container.get<D>();
+    final d = container.get<D>();
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');
   });
@@ -76,20 +76,20 @@ void main() {
   test('Named Key Factory', () {
     final builder = IocContainerBuilder();
     builder
-        .addSingletonObject(AFactory())
-        .add((container) => SomeService(container.get<AFactory>()));
+      ..addSingletonObject(AFactory())
+      ..add((container) => SomeService(container.get<AFactory>()));
 
     final container = builder.toContainer();
-    var someService = container.get<SomeService>();
+    final someService = container.get<SomeService>();
     expect(someService.a.name, 'a');
     expect(someService.aa.name, 'aa');
   });
 
   test('Test Singleton', () {
-    final container = IocContainerBuilder()
-        .addSingletonObject(A('a'))
-        .addSingleton((cont) => B(cont.get<A>()))
-        .toContainer();
+    final builder = IocContainerBuilder()
+      ..addSingletonObject(A('a'))
+      ..addSingleton((cont) => B(cont.get<A>()));
+    final container = builder.toContainer();
     final a = container.get<A>();
     final b = container.get<B>();
     expect(b.a == a, true);

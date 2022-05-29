@@ -9,11 +9,12 @@ class ServiceDefinition<T> {
 }
 
 class IocContainer {
-  final Map<Type, ServiceDefinition> _serviceDefinitionsByType;
+  @visibleForTesting
+  final Map<Type, ServiceDefinition> serviceDefinitionsByType;
   @visibleForTesting
   final Map<Type, Object> singletons;
 
-  IocContainer(this._serviceDefinitionsByType, this.singletons);
+  IocContainer(this.serviceDefinitionsByType, this.singletons);
 
   ///Get an instance of your dependency
   T get<T>() {
@@ -21,7 +22,7 @@ class IocContainer {
       return singletons[T] as T;
     }
 
-    final serviceDefinition = _serviceDefinitionsByType[T];
+    final serviceDefinition = serviceDefinitionsByType[T];
 
     if (serviceDefinition == null) {
       throw Exception('Service not found');

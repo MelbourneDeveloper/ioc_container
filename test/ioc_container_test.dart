@@ -111,6 +111,7 @@ void main() {
     final container = builder.toContainer();
     expect(container.singletons[A], container.get<A>());
     expect(container.singletons[B], container.get<B>());
+    expect(container.singletons.length, 2);
   });
 
   test('Test Can Replace', () {
@@ -130,6 +131,22 @@ void main() {
         throwsException);
   });
 
+  test('Test Immutability', () {
+    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final container = builder.toContainer();
+
+    expect(
+        () => container.serviceDefinitionsByType
+            .addAll({String: ServiceDefinition(true, (c) => 'a')}),
+        throwsUnsupportedError);
+    final container2 = builder.toContainer();
+
+    expect(
+        () => container2.serviceDefinitionsByType
+            .addAll({String: ServiceDefinition(true, (c) => 'a')}),
+        throwsUnsupportedError);
+  });
+
   test('Test Lazy', () {
     final builder = IocContainerBuilder()..addSingletonService(A('a'));
     final container = builder.toContainer(isLazy: true);
@@ -145,5 +162,8 @@ void main() {
     expect(container.singletons.length, 1);
     final a = container.get<A>();
     expect(container.singletons[A] == a, true);
+    //Make sure the singletons are immutable
+    expect(() => container.singletons.addAll({String: 'a'}),
+        throwsUnsupportedError);
   });
 }

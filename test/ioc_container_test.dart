@@ -114,6 +114,16 @@ void main() {
     expect(container.singletons.length, 2);
   });
 
+  test('Test Singleton 4', () {
+    final builder = IocContainerBuilder()
+      ..addSingleton((c) => A('a'))
+      ..addSingleton((c) => B(c.get<A>()));
+    final container = builder.toContainer();
+    final a = container.get<A>();
+    final b = container.get<B>();
+    expect(a, b.a);
+  });
+
   test('Test Can Replace', () {
     final builder = IocContainerBuilder()
       ..addSingletonService(A('a'))
@@ -165,5 +175,15 @@ void main() {
     //Make sure the singletons are immutable
     expect(() => container.singletons.addAll({String: 'a'}),
         throwsUnsupportedError);
+  });
+
+  test('Test Transience', () {
+    final builder = IocContainerBuilder()
+      ..add((c) => A('a'))
+      ..add((c) => B(c.get<A>()));
+    final container = builder.toContainer();
+    final a = container.get<A>();
+    final b = container.get<B>();
+    expect(a, isNot(b.a));
   });
 }

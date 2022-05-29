@@ -17,25 +17,16 @@ class IocContainer {
   IocContainer(this.serviceDefinitionsByType, this.singletons);
 
   ///Get an instance of your dependency
-  T get<T>() {
-    if (singletons.containsKey(T)) {
-      return singletons[T] as T;
-    }
-
-    final serviceDefinition = serviceDefinitionsByType[T];
-
-    if (serviceDefinition == null) {
-      throw Exception('Service not found');
-    }
-
-    final service = serviceDefinition.factory(this) as T;
-
-    if (serviceDefinition.isSingleton) {
-      singletons.putIfAbsent(T, () => service as Object);
-    }
-
-    return service;
-  }
+  T get<T>() => singletons.containsKey(T)
+      ? singletons[T] as T
+      : serviceDefinitionsByType.containsKey(T)
+          ? (serviceDefinitionsByType[T]!.isSingleton
+              ? singletons.putIfAbsent(
+                  T,
+                  () =>
+                      serviceDefinitionsByType[T]!.factory(this) as Object) as T
+              : serviceDefinitionsByType[T]!.factory(this))
+          : throw Exception('Service not found');
 }
 
 ///A builder for creating an [IocContainer].

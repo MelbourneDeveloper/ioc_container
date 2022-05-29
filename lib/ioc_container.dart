@@ -42,10 +42,11 @@ class IocContainer {
 class IocContainerBuilder {
   final Map<Type, ServiceDefinition> _serviceDefinitionsByType = {};
 
-  ///Throw an error if a service is added more than once
+  ///Throw an error if a service is added more than once. Set this to true when
+  ///you want to add mocks to set of services for a test.
   final bool allowOverrides;
 
-  IocContainerBuilder({this.allowOverrides = true});
+  IocContainerBuilder({this.allowOverrides = false});
 
   ///Add a factory to the container.
   void addServiceDefinition<T>(

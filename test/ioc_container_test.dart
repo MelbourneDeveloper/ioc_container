@@ -125,7 +125,7 @@ void main() {
   });
 
   test('Test Can Replace', () {
-    final builder = IocContainerBuilder()
+    final builder = IocContainerBuilder(allowOverrides: true)
       ..addSingletonService(A('a'))
       ..addSingletonService(A('b'));
     final container = builder.toContainer();
@@ -135,7 +135,7 @@ void main() {
 
   test('Test Cant Replace', () {
     expect(
-        () => IocContainerBuilder(allowOverrides: false)
+        () => IocContainerBuilder()
           ..addSingletonService(A('a'))
           ..addSingletonService(A('b')),
         throwsException);

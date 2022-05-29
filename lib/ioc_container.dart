@@ -40,22 +40,27 @@ class IocContainer {
 
 ///A builder for creating an [IocContainer].
 class IocContainerBuilder {
-  final Map<Type, ServiceDefinition> _map = {};
+  final Map<Type, ServiceDefinition> _serviceDefinitionsByType = {};
+
+  ///Throw an error if a service is added more than once
   final bool allowOverrides;
 
   IocContainerBuilder({this.allowOverrides = true});
 
   ///Add a factory to the container.
-  void addServiceDefinition<T>(ServiceDefinition<T> get) {
-    if (_map.containsKey(T)) {
+  void addServiceDefinition<T>(
+
+      ///Add a factory and whether or not this service is a singleton
+      ServiceDefinition<T> serviceDefinition) {
+    if (_serviceDefinitionsByType.containsKey(T)) {
       if (allowOverrides) {
-        _map.remove(T);
+        _serviceDefinitionsByType.remove(T);
       } else {
         throw Exception('Service already exists');
       }
     }
 
-    _map.putIfAbsent(T, () => get);
+    _serviceDefinitionsByType.putIfAbsent(T, () => serviceDefinition);
   }
 
   ///Create an [IocContainer] from the [IocContainerBuilder].
@@ -69,19 +74,21 @@ class IocContainerBuilder {
       bool isLazy = false}) {
     if (!isLazy) {
       final singletons = <Type, Object>{};
-      final tempContainer = IocContainer(_map, singletons);
-      _map.forEach((type, serviceDefinition) {
+      final tempContainer = IocContainer(_serviceDefinitionsByType, singletons);
+      _serviceDefinitionsByType.forEach((type, serviceDefinition) {
         if (serviceDefinition.isSingleton) {
           singletons.putIfAbsent(
               type, () => serviceDefinition.factory(tempContainer));
         }
       });
 
-      return IocContainer(Map<Type, ServiceDefinition>.unmodifiable(_map),
+      return IocContainer(
+          Map<Type, ServiceDefinition>.unmodifiable(_serviceDefinitionsByType),
           Map<Type, Object>.unmodifiable(singletons));
     }
     return IocContainer(
-        Map<Type, ServiceDefinition>.unmodifiable(_map), <Type, Object>{});
+        Map<Type, ServiceDefinition>.unmodifiable(_serviceDefinitionsByType),
+        <Type, Object>{});
   }
 }
 

@@ -71,6 +71,7 @@ void main() {
     final d = container.get<D>();
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');
+    expect(container.singletons.length, 1);
   });
 
   test('Named Key Factory', () {
@@ -101,5 +102,48 @@ void main() {
     final a = container.get<A>();
     final aa = container.get<A>();
     expect(a == aa, true);
+  });
+
+  test('Test Singleton 3', () {
+    final builder = IocContainerBuilder()
+      ..addSingleton((c) => B(c.get<A>()))
+      ..addSingletonService(A('a'));
+    final container = builder.toContainer();
+    expect(container.singletons[A], container.get<A>());
+    expect(container.singletons[B], container.get<B>());
+  });
+
+  test('Test Can Replace', () {
+    final builder = IocContainerBuilder()
+      ..addSingletonService(A('a'))
+      ..addSingletonService(A('b'));
+    final container = builder.toContainer();
+    final a = container.get<A>();
+    expect(a.name, 'b');
+  });
+
+  test('Test Cant Replace', () {
+    expect(
+        () => IocContainerBuilder(allowOverrides: false)
+          ..addSingletonService(A('a'))
+          ..addSingletonService(A('b')),
+        throwsException);
+  });
+
+  test('Test Lazy', () {
+    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final container = builder.toContainer(isLazy: true);
+    expect(container.singletons.length, 0);
+    final a = container.get<A>();
+    expect(container.singletons.length, 1);
+    expect(container.singletons[A] == a, true);
+  });
+
+  test('Test Zealous', () {
+    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final container = builder.toContainer();
+    expect(container.singletons.length, 1);
+    final a = container.get<A>();
+    expect(container.singletons[A] == a, true);
   });
 }

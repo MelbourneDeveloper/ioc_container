@@ -1,5 +1,7 @@
 ## A Dart Ioc Container
 
+Grab [ioc_container](https://pub.dev/packages/ioc_container) on pub deb
+
 Manage the creation of your dependencies in one place. If you've used Provider, you'll probably need an Ioc Container to compliment it. Provider is good at sneaking your dependencies in to widgets, but Ioc Container is good at creating them in the first place. Return `get` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons for Provider.
 
 Code in `lib/`, and example unit test in `test/`.

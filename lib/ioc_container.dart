@@ -114,5 +114,5 @@ extension Extensions on IocContainerBuilder {
 
   ///Add a factory to the container.
   void add<T>(T Function(IocContainer container) factory) =>
-      addServiceDefinition(ServiceDefinition(factory, isSingleton: false));
+      addServiceDefinition(ServiceDefinition(factory));
 }

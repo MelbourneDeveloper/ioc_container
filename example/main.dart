@@ -30,5 +30,6 @@ void main(List<String> arguments) {
     ..add((i) => D(i.get<B>(), i.get<C>()));
   final container = builder.toContainer();
   final d = container.get<D>();
+  // ignore: avoid_print
   print('Hello world: ${d.c.b.a.name}');
 }

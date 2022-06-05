@@ -150,7 +150,7 @@ void main() {
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
-    var d = container.get<D>();
+    final d = container.get<D>();
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');
   });
@@ -161,13 +161,13 @@ void main() {
 
     expect(
         () => container.serviceDefinitionsByType
-            .addAll({String: ServiceDefinition(true, (c) => 'a')}),
+            .addAll({String: ServiceDefinition((c) => 'a', isSingleton: true)}),
         throwsUnsupportedError);
     final container2 = builder.toContainer();
 
     expect(
         () => container2.serviceDefinitionsByType
-            .addAll({String: ServiceDefinition(true, (c) => 'a')}),
+            .addAll({String: ServiceDefinition((c) => 'a', isSingleton: true)}),
         throwsUnsupportedError);
   });
 

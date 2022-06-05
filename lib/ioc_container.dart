@@ -1,22 +1,37 @@
-///An immutable collection of factories keyed by type.
 import 'package:meta/meta.dart';
 
+///Defines a factory for the service and whether or not it is a singleton.
+@immutable
 class ServiceDefinition<T> {
-  bool isSingleton;
-  T Function(IocContainer container) factory;
+  ///If true, only once instance of the service will be created and shared for
+  ///for the lifespan of the app
+  final bool isSingleton;
 
-  ServiceDefinition(this.isSingleton, this.factory);
+  ///The factory that creates the instance of the service and can access other
+  ///services in this container
+  final T Function(IocContainer container) factory;
+
+  ServiceDefinition(this.factory, {this.isSingleton = false});
 }
 
+///A built Ioc Container. To create a new IocContainer, use
+///[IocContainerBuilder]. To get a service from the container, call [get].
+///Builders create immutable containers unless you specify the
+///isLazy option on toContainer(). You can build your own container by injecting
+///service definitions and singletons here
+@immutable
 class IocContainer {
+  ///This is only here for testing and you should not use this in your code
   @visibleForTesting
   final Map<Type, ServiceDefinition> serviceDefinitionsByType;
+
+  ///This is only here for testing and you should not use this in your code
   @visibleForTesting
   final Map<Type, Object> singletons;
 
   IocContainer(this.serviceDefinitionsByType, this.singletons);
 
-  ///Get an instance of your dependency
+  ///Get an instance of the service by type
   T get<T>() => singletons.containsKey(T)
       ? singletons[T] as T
       : serviceDefinitionsByType.containsKey(T)
@@ -30,6 +45,7 @@ class IocContainer {
 }
 
 ///A builder for creating an [IocContainer].
+@immutable
 class IocContainerBuilder {
   final Map<Type, ServiceDefinition> _serviceDefinitionsByType = {};
 
@@ -80,18 +96,23 @@ class IocContainerBuilder {
     }
     return IocContainer(
         Map<Type, ServiceDefinition>.unmodifiable(_serviceDefinitionsByType),
+        //Note: this case allows the singletons to be mutable
+        // ignore: prefer_const_literals_to_create_immutables
         <Type, Object>{});
   }
 }
 
 extension Extensions on IocContainerBuilder {
-  ///Add a singleton object dependency to the container.
-  void addSingletonService<T>(T service) =>
-      addServiceDefinition(ServiceDefinition(true, (i) => service));
+  ///Add a singleton service to the container.
+  void addSingletonService<T>(T service) => addServiceDefinition(
+      ServiceDefinition<T>((i) => service, isSingleton: true));
 
+  ///Add a singleton factory to the container. The container
+  ///will only call this once throughout the lifespan of the app
   void addSingleton<T>(T Function(IocContainer container) factory) =>
-      addServiceDefinition(ServiceDefinition(true, factory));
+      addServiceDefinition(ServiceDefinition(factory, isSingleton: true));
 
+  ///Add a factory to the container.
   void add<T>(T Function(IocContainer container) factory) =>
-      addServiceDefinition(ServiceDefinition(false, factory));
+      addServiceDefinition(ServiceDefinition(factory, isSingleton: false));
 }

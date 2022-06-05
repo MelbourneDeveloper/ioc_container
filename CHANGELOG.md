@@ -8,3 +8,5 @@
 - Refactor (breaking changes) to fix singleton issues
 ## 0.5.0
 - Drop a dependency version down
+## 0.6.0
+- Add more documentation and fix some code analysis issues

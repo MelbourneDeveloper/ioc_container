@@ -1,8 +1,13 @@
+include: package:lints/recommended.yaml
+
 linter:
   rules:
     - always_declare_return_types
     - always_put_control_body_on_new_line
     - always_require_non_null_named_parameters
+    - always_put_required_named_parameters_first
+    #- always_specify_types
+    - always_use_package_imports
     - annotate_overrides
     - avoid_annotating_with_dynamic
     - avoid_bool_literals_in_conditional_expressions
@@ -20,6 +25,7 @@ linter:
     - avoid_js_rounded_ints
     - avoid_multiple_declarations_per_line
     - avoid_null_checks_in_equality_operators
+    - avoid_function_literals_in_foreach_calls
     - avoid_positional_boolean_parameters
     - avoid_print
     - avoid_private_typedef_functions
@@ -46,40 +52,66 @@ linter:
     - camel_case_extensions
     - camel_case_types
     - cancel_subscriptions
+    - cascade_invocations
     - cast_nullable_to_non_nullable
     - close_sinks
     - comment_references
+    - constant_identifier_names
     - control_flow_in_finally
     - curly_braces_in_flow_control_structures
+    #- dead_code
+    - depend_on_referenced_packages
     - deprecated_consistency
+    #- deprecated_member_use
+    #- deprecated_member_use_from_same_package
+    - diagnostic_describe_all_properties
     - directives_ordering
     - do_not_use_environment
+    #- duplicate_import
     - empty_catches
     - empty_constructor_bodies
     - empty_statements
+    - eol_at_end_of_file
     - exhaustive_cases
+    - file_names
+    - flutter_style_todos
     - hash_and_equals
     - implementation_imports
+    #- inference_failure_on_function_return_type
+    #- invalid_null_aware_operator
+    #- invalid_use_of_protected_member
+    #- invalid_use_of_visible_for_testing_member
+    #- invalid_visibility_annotation
     - invariant_booleans
     - iterable_contains_unrelated_type
     - join_return_with_assignment
     - leading_newlines_in_multiline_strings
     - library_names
     - library_prefixes
+    - library_private_types_in_public_api
     - lines_longer_than_80_chars
     - list_remove_unrelated_type
     - literal_only_boolean_expressions
+    #- missing_enum_constant_in_switch
     - missing_whitespace_between_adjacent_strings
+    #- must_be_immutable
+    #- must_call_super
     - no_adjacent_strings_in_list
     - no_default_cases
     - no_duplicate_case_values
+    - no_logic_in_create_state
     - no_runtimeType_toString
     - non_constant_identifier_names
+    - noop_primitive_operations
+    #- null_argument_to_non_null_type
+    #- null_check_always_fails
     - null_check_on_nullable_type_parameter
     - null_closures
+    - omit_local_variable_types
     - one_member_abstracts
     - only_throw_errors
     - overridden_fields
+    #- override_on_non_overriding_member
     - package_api_docs
     - package_names
     - package_prefixed_library_names
@@ -90,13 +122,18 @@ linter:
     - prefer_collection_literals
     - prefer_conditional_assignment
     - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
+    - prefer_constructors_over_static_methods
     - prefer_contains
+    -  #prefer_double_quotes
     - prefer_equal_for_default_values
+    - prefer_expression_function_bodies
     - prefer_final_fields
     - prefer_final_in_for_each
     - prefer_final_locals
+    - prefer_final_parameters
     - prefer_for_elements_to_map_fromIterable
     - prefer_foreach
     - prefer_function_declarations_over_variables
@@ -112,17 +149,26 @@ linter:
     - prefer_is_not_operator
     - prefer_iterable_whereType
     - prefer_mixin
+    - prefer_null_aware_method_calls
     - prefer_null_aware_operators
+    - prefer_relative_imports
+    - prefer_single_quotes
     - prefer_spread_collections
     - prefer_typing_uninitialized_variables
     - prefer_void_to_null
     - provide_deprecation_message
+    - public_member_api_docs
     - recursive_getters
+    - require_trailing_commas
+    #- sdk_version_constructor_tearoffs
     - sized_box_for_whitespace
     - slash_for_doc_comments
     - sort_child_properties_last
+    - sort_constructors_first
     - sort_pub_dependencies
     - sort_unnamed_constructors_first
+    #- strict_raw_type
+    #- subtype_of_sealed_class
     - test_types_in_equals
     - throw_in_finally
     - tighten_type_of_initializing_formals
@@ -131,12 +177,17 @@ linter:
     - unawaited_futures
     - unnecessary_await_in_return
     - unnecessary_brace_in_string_interps
+    #- unnecessary_cast
     - unnecessary_const
+    #- unnecessary_final
     - unnecessary_getters_setters
+    #- unnecessary_import
     - unnecessary_lambdas
     - unnecessary_new
+    #- unnecessary_non_null_assertion
     - unnecessary_null_aware_assignments
     - unnecessary_null_checks
+    #- unnecessary_null_comparison
     - unnecessary_null_in_if_null_operators
     - unnecessary_nullable_for_final_variable_declarations
     - unnecessary_overrides
@@ -146,234 +197,296 @@ linter:
     - unnecessary_string_escapes
     - unnecessary_string_interpolations
     - unnecessary_this
+    #- unnecessary_type_check
     - unrelated_type_equality_checks
     - unsafe_html
+    #- unused_element
+    #- unused_field
+    #- unused_import
+    #- unused_local_variable
     - use_build_context_synchronously
     - use_full_hex_values_for_flutter_colors
     - use_function_type_syntax_for_parameters
     - use_if_null_to_convert_nulls_to_bools
     - use_is_even_rather_than_modulo
+    - use_key_in_widget_constructors
     - use_late_for_private_fields_and_variables
     - use_named_constants
     - use_raw_strings
     - use_rethrow_when_possible
     - use_setters_to_change_properties
     - use_string_buffers
+    - use_test_throws_matchers
     - use_to_and_as_if_applicable
     - valid_regexps
     - void_checks
 
+#Changing the severity of rules
+#https://dart-lang.github.io/linter/lints/options/options.html
 analyzer:
-errors:
-  always_declare_return_types: error
-  always_put_control_body_on_new_line: error
-  always_put_required_named_parameters_first: error
-  always_require_non_null_named_parameters: error
-  always_specify_types: error
-  always_use_package_imports: error
-  annotate_overrides: error
-  avoid_annotating_with_dynamic: error
-  avoid_bool_literals_in_conditional_expressions: error
-  avoid_catches_without_on_clauses: error
-  avoid_catching_errors: error
-  avoid_classes_with_only_static_members: error
-  avoid_double_and_int_checks: error
-  avoid_dynamic_calls: error
-  avoid_empty_else: error
-  avoid_equals_and_hash_code_on_mutable_classes: error
-  avoid_escaping_inner_quotes: error
-  avoid_field_initializers_in_const_classes: error
-  avoid_function_literals_in_foreach_calls: error
-  avoid_implementing_value_types: error
-  avoid_init_to_null: error
-  avoid_js_rounded_ints: error
-  avoid_multiple_declarations_per_line: error
-  avoid_null_checks_in_equality_operators: error
-  avoid_positional_boolean_parameters: error
-  avoid_print: error
-  avoid_private_typedef_functions: error
-  avoid_redundant_argument_values: error
-  avoid_relative_lib_imports: error
-  avoid_renaming_method_parameters: error
-  avoid_return_types_on_setters: error
-  avoid_returning_null: error
-  avoid_returning_null_for_future: error
-  avoid_returning_null_for_void: error
-  avoid_returning_this: error
-  avoid_setters_without_getters: error
-  avoid_shadowing_type_parameters: error
-  avoid_single_cascade_in_expression_statements: error
-  avoid_slow_async_io: error
-  avoid_type_to_string: error
-  avoid_types_as_parameter_names: error
-  avoid_types_on_closure_parameters: error
-  avoid_unnecessary_containers: error
-  avoid_unused_constructor_parameters: error
-  avoid_void_async: error
-  avoid_web_libraries_in_flutter: error
-  await_only_futures: error
-  camel_case_extensions: error
-  camel_case_types: error
-  cancel_subscriptions: error
-  cascade_invocations: error
-  cast_nullable_to_non_nullable: error
-  close_sinks: error
-  comment_references: error
-  constant_identifier_names: error
-  control_flow_in_finally: error
-  curly_braces_in_flow_control_structures: error
-  depend_on_referenced_packages: error
-  deprecated_consistency: error
-  diagnostic_describe_all_properties: error
-  directives_ordering: error
-  duplicate_import: error
-  do_not_use_environment: error
-  empty_catches: error
-  empty_constructor_bodies: error
-  empty_statements: error
-  eol_at_end_of_file: error
-  exhaustive_cases: error
-  file_names: error
-  flutter_style_todos: error
-  hash_and_equals: error
-  implementation_imports: error
-  invariant_booleans: error
-  iterable_contains_unrelated_type: error
-  join_return_with_assignment: error
-  leading_newlines_in_multiline_strings: error
-  library_names: error
-  library_prefixes: error
-  library_private_types_in_public_api: error
-  lines_longer_than_80_chars: error
-  list_remove_unrelated_type: error
-  literal_only_boolean_expressions: error
-  missing_whitespace_between_adjacent_strings: error
-  no_adjacent_strings_in_list: error
-  no_default_cases: error
-  no_duplicate_case_values: error
-  no_logic_in_create_state: error
-  no_runtimeType_toString: error
-  non_constant_identifier_names: error
-  noop_primitive_operations: error
-  null_argument_to_non_null_type: error
-  null_check_on_nullable_type_parameter: error
-  null_closures: error
-  omit_local_variable_types: error
-  one_member_abstracts: error
-  only_throw_errors: error
-  overridden_fields: error
-  package_api_docs: error
-  package_names: error
-  package_prefixed_library_names: error
-  parameter_assignments: error
-  prefer_adjacent_string_concatenation: error
-  prefer_asserts_in_initializer_lists: error
-  prefer_asserts_with_message: error
-  prefer_collection_literals: error
-  prefer_conditional_assignment: error
-  prefer_const_constructors: error
-  prefer_const_constructors_in_immutables: error
-  prefer_const_declarations: error
-  prefer_const_literals_to_create_immutables: error
-  prefer_constructors_over_static_methods: error
-  prefer_contains: error
-  prefer_double_quotes: error
-  prefer_equal_for_default_values: error
-  prefer_expression_function_bodies: error
-  prefer_final_fields: error
-  prefer_final_in_for_each: error
-  prefer_final_locals: error
-  prefer_final_parameters: error
-  prefer_for_elements_to_map_fromIterable: error
-  prefer_foreach: error
-  prefer_function_declarations_over_variables: error
-  prefer_generic_function_type_aliases: error
-  prefer_if_elements_to_conditional_expressions: error
-  prefer_if_null_operators: error
-  prefer_initializing_formals: error
-  prefer_inlined_adds: error
-  prefer_int_literals: error
-  prefer_interpolation_to_compose_strings: error
-  prefer_is_empty: error
-  prefer_is_not_empty: error
-  prefer_is_not_operator: error
-  prefer_iterable_whereType: error
-  prefer_mixin: error
-  prefer_null_aware_method_calls: error
-  prefer_null_aware_operators: error
-  prefer_relative_imports: error
-  prefer_single_quotes: error
-  prefer_spread_collections: error
-  prefer_typing_uninitialized_variables: error
-  prefer_void_to_null: error
-  provide_deprecation_message: error
-  public_member_api_docs: error
-  recursive_getters: error
-  require_trailing_commas: error
-  sized_box_for_whitespace: error
-  slash_for_doc_comments: error
-  sort_child_properties_last: error
-  sort_constructors_first: error
-  sort_pub_dependencies: error
-  sort_unnamed_constructors_first: error
-  test_types_in_equals: error
-  throw_in_finally: error
-  tighten_type_of_initializing_formals: error
-  type_annotate_public_apis: error
-  type_init_formals: error
-  unawaited_futures: error
-  unnecessary_await_in_return: error
-  unnecessary_brace_in_string_interps: error
-  unnecessary_const: error
-  unnecessary_final: error
-  unnecessary_import: error
-  unnecessary_getters_setters: error
-  unnecessary_lambdas: error
-  unnecessary_new: error
-  unnecessary_null_aware_assignments: error
-  unnecessary_null_checks: error
-  unnecessary_null_in_if_null_operators: error
-  unnecessary_nullable_for_final_variable_declarations: error
-  unnecessary_overrides: error
-  unnecessary_parenthesis: error
-  unnecessary_raw_strings: error
-  unnecessary_statements: error
-  unnecessary_string_escapes: error
-  unnecessary_string_interpolations: error
-  unnecessary_this: error
-  unrelated_type_equality_checks: error
-  unsafe_html: error
-  unused_local_variable: error
-  use_build_context_synchronously: error
-  use_full_hex_values_for_flutter_colors: error
-  use_function_type_syntax_for_parameters: error
-  use_if_null_to_convert_nulls_to_bools: error
-  use_is_even_rather_than_modulo: error
-  use_key_in_widget_constructors: error
-  use_late_for_private_fields_and_variables: error
-  use_named_constants: error
-  use_raw_strings: error
-  use_rethrow_when_possible: error
-  use_setters_to_change_properties: error
-  use_string_buffers: error
-  use_test_throws_matchers: error
-  use_to_and_as_if_applicable: error
-  valid_regexps: error
-  void_checks: error
-  unused_import: error
-  dead_code: error
-  unnecessary_cast: error
-  must_call_super: error
-  unused_field: error
-  unnecessary_non_null_assertion: error
-  deprecated_member_use_from_same_package: error
-  null_check_always_fails: error
-  unused_element: error
-  must_be_immutable: error
-  deprecated_member_use: error
-  unnecessary_type_check: error
-  invalid_use_of_protected_member: error
-  unnecessary_null_comparison: error
-  override_on_non_overriding_member: error
-  invalid_null_aware_operator: error
-  missing_enum_constant_in_switch: error
+  language:
+    strict-inference: true
+    strict-raw-types: true
+  plugins:
+    - dart_code_metrics
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  exclude:
+  errors:
+    always_declare_return_types: error
+    always_put_control_body_on_new_line: error
+    always_put_required_named_parameters_first: error
+    always_require_non_null_named_parameters: error
+    # We shouldn't specify types explicitly. However, this rule also
+    # forces us to specify type arguments so not sure what to do here...
+    # On top of this, even if we specify false, this rule can conflict with rules that
+    # require us to remove explicit types
+    #always_specify_types: false
+    always_use_package_imports: error
+    annotate_overrides: error
+    avoid_annotating_with_dynamic: error
+    avoid_bool_literals_in_conditional_expressions: error
+    avoid_catches_without_on_clauses: error
+    avoid_catching_errors: error
+    avoid_classes_with_only_static_members: error
+    avoid_double_and_int_checks: error
+    avoid_dynamic_calls: error
+    avoid_empty_else: error
+    avoid_equals_and_hash_code_on_mutable_classes: error
+    avoid_escaping_inner_quotes: error
+    avoid_field_initializers_in_const_classes: error
+    avoid_function_literals_in_foreach_calls: error
+    avoid_implementing_value_types: error
+    avoid_init_to_null: error
+    avoid_js_rounded_ints: error
+    avoid_multiple_declarations_per_line: error
+    avoid_null_checks_in_equality_operators: error
+    avoid_positional_boolean_parameters: warning
+    avoid_print: error
+    avoid_private_typedef_functions: error
+    avoid_redundant_argument_values: error
+    avoid_relative_lib_imports: error
+    avoid_renaming_method_parameters: error
+    avoid_return_types_on_setters: error
+    avoid_returning_null: error
+    avoid_returning_null_for_future: error
+    avoid_returning_null_for_void: error
+    avoid_returning_this: error
+    avoid_setters_without_getters: error
+    avoid_shadowing_type_parameters: error
+    avoid_single_cascade_in_expression_statements: error
+    avoid_slow_async_io: error
+    avoid_type_to_string: error
+    avoid_types_as_parameter_names: error
+    avoid_types_on_closure_parameters: error
+    avoid_unnecessary_containers: error
+    avoid_unused_constructor_parameters: error
+    avoid_void_async: error
+    avoid_web_libraries_in_flutter: error
+    await_only_futures: error
+    camel_case_extensions: error
+    camel_case_types: error
+    cancel_subscriptions: error
+    cascade_invocations: error
+    cast_nullable_to_non_nullable: error
+    close_sinks: error
+    comment_references: error
+    constant_identifier_names: error
+    control_flow_in_finally: error
+    curly_braces_in_flow_control_structures: error
+    dead_code: error
+    depend_on_referenced_packages: error
+    deprecated_consistency: error
+    deprecated_member_use: error
+    deprecated_member_use_from_same_package: error
+    diagnostic_describe_all_properties: error
+    directives_ordering: error
+    do_not_use_environment: error
+    duplicate_import: error
+    empty_catches: error
+    empty_constructor_bodies: error
+    empty_statements: error
+    eol_at_end_of_file: error
+    exhaustive_cases: error
+    file_names: error
+    flutter_style_todos: ignore
+    hash_and_equals: error
+    implementation_imports: error
+    inference_failure_on_function_return_type: error
+    invalid_use_of_visible_for_testing_member: error
+    invalid_visibility_annotation: error
+    invariant_booleans: error
+    iterable_contains_unrelated_type: error
+    join_return_with_assignment: error
+    leading_newlines_in_multiline_strings: error
+    library_names: error
+    library_prefixes: error
+    library_private_types_in_public_api: error
+    lines_longer_than_80_chars: error
+    list_remove_unrelated_type: error
+    literal_only_boolean_expressions: error
+    missing_enum_constant_in_switch: error
+    missing_whitespace_between_adjacent_strings: error
+    must_be_immutable: error
+    must_call_super: error
+    no_adjacent_strings_in_list: error
+    no_default_cases: error
+    no_duplicate_case_values: error
+    no_logic_in_create_state: error
+    no_runtimeType_toString: error
+    non_constant_identifier_names: error
+    noop_primitive_operations: error
+    null_argument_to_non_null_type: error
+    null_check_always_fails: error
+    null_check_on_nullable_type_parameter: error
+    null_closures: error
+    omit_local_variable_types: error
+    one_member_abstracts: error
+    only_throw_errors: error
+    overridden_fields: error
+    override_on_non_overriding_member: error
+    package_api_docs: error
+    package_names: error
+    package_prefixed_library_names: error
+    parameter_assignments: error
+    prefer_adjacent_string_concatenation: error
+    prefer_asserts_in_initializer_lists: error
+    prefer_asserts_with_message: error
+    prefer_collection_literals: error
+    prefer_conditional_assignment: error
+    prefer_const_constructors: error
+    prefer_const_constructors_in_immutables: error
+    prefer_const_declarations: error
+    prefer_const_literals_to_create_immutables: error
+    prefer_constructors_over_static_methods: error
+    prefer_contains: error
+    prefer_double_quotes: ignore
+    prefer_equal_for_default_values: error
+    prefer_expression_function_bodies: error
+    prefer_final_fields: error
+    prefer_final_in_for_each: error
+    prefer_final_locals: error
+    prefer_final_parameters: ignore
+    prefer_for_elements_to_map_fromIterable: error
+    prefer_foreach: error
+    prefer_function_declarations_over_variables: error
+    prefer_generic_function_type_aliases: error
+    prefer_if_elements_to_conditional_expressions: error
+    prefer_if_null_operators: error
+    prefer_initializing_formals: error
+    prefer_inlined_adds: error
+    prefer_int_literals: error
+    prefer_interpolation_to_compose_strings: error
+    prefer_is_empty: error
+    prefer_is_not_empty: error
+    prefer_is_not_operator: error
+    prefer_iterable_whereType: error
+    prefer_mixin: error
+    prefer_null_aware_method_calls: error
+    prefer_null_aware_operators: error
+    prefer_relative_imports: ignore
+    prefer_single_quotes: error
+    prefer_spread_collections: error
+    prefer_typing_uninitialized_variables: error
+    prefer_void_to_null: error
+    provide_deprecation_message: error
+    public_member_api_docs: error
+    recursive_getters: error
+    require_trailing_commas: error
+    sdk_version_constructor_tearoffs: error
+    sized_box_for_whitespace: error
+    slash_for_doc_comments: error
+    sort_child_properties_last: error
+    sort_constructors_first: error
+    sort_pub_dependencies: error
+    sort_unnamed_constructors_first: error
+    strict_raw_type: error
+    subtype_of_sealed_class: error
+    test_types_in_equals: error
+    throw_in_finally: error
+    tighten_type_of_initializing_formals: error
+    type_annotate_public_apis: error
+    type_init_formals: error
+    unawaited_futures: error
+    unnecessary_await_in_return: error
+    unnecessary_brace_in_string_interps: error
+    unnecessary_cast: error
+    unnecessary_const: error
+    unnecessary_final: error
+    unnecessary_getters_setters: error
+    unnecessary_import: error
+    unnecessary_lambdas: error
+    unnecessary_new: error
+    unnecessary_non_null_assertion: error
+    unnecessary_null_aware_assignments: error
+    unnecessary_null_checks: error
+    unnecessary_null_comparison: error
+    unnecessary_null_in_if_null_operators: error
+    unnecessary_nullable_for_final_variable_declarations: error
+    unnecessary_overrides: error
+    unnecessary_parenthesis: error
+    unnecessary_raw_strings: error
+    unnecessary_statements: error
+    unnecessary_string_escapes: error
+    unnecessary_string_interpolations: error
+    unnecessary_this: error
+    unnecessary_type_check: error
+    unrelated_type_equality_checks: error
+    unsafe_html: error
+    unused_element: error
+    unused_field: error
+    unused_import: error
+    unused_local_variable: error
+    use_build_context_synchronously: error
+    use_full_hex_values_for_flutter_colors: error
+    use_function_type_syntax_for_parameters: error
+    use_if_null_to_convert_nulls_to_bools: error
+    use_is_even_rather_than_modulo: error
+    use_key_in_widget_constructors: error
+    use_late_for_private_fields_and_variables: error
+    use_named_constants: error
+    use_raw_strings: error
+    use_rethrow_when_possible: error
+    use_setters_to_change_properties: error
+    use_string_buffers: error
+    use_test_throws_matchers: error
+    use_to_and_as_if_applicable: error
+    valid_regexps: error
+    void_checks: error
+
+dart_code_metrics:
+  anti-patterns:
+    - long-method:
+        severity: error
+    - long-parameter-list:
+        severity: error
+  metrics:
+    cyclomatic-complexity: 20
+    maximum-nesting-level: 5
+    number-of-parameters: 4
+    source-lines-of-code: 50
+    weight-of-class: 0.33
+    halstead-volume: 150
+  metrics-exclude:
+  rules:
+    - newline-before-return:
+        severity: error
+    - no-boolean-literal-compare:
+        severity: error
+    - no-empty-block:
+        severity: error
+    - prefer-trailing-comma:
+        severity: error
+    - prefer-conditional-expressions:
+        severity: error
+    - no-equal-then-else:
+        severity: error
+    - avoid-restricted-imports:
+        severity: error
+    - avoid-global-state:
+        severity: error
+    - avoid-ignoring-return-values:
+        severity: error
+    - avoid-late-keyword:
+        severity: error

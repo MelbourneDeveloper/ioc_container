@@ -10,3 +10,5 @@
 - Drop a dependency version down
 ## 0.6.0
 - Add more documentation and fix some code analysis issues
+## 0.7.0
+- Give the name of a missing service in the exception. Remove meta dependency

@@ -161,12 +161,14 @@ void main() {
 
     expect(
         () => container.serviceDefinitionsByType
+            //ignore: implicit_dynamic_type
             .addAll({String: ServiceDefinition((c) => 'a', isSingleton: true)}),
         throwsUnsupportedError);
     final container2 = builder.toContainer();
 
     expect(
         () => container2.serviceDefinitionsByType
+            //ignore: implicit_dynamic_type
             .addAll({String: ServiceDefinition((c) => 'a', isSingleton: true)}),
         throwsUnsupportedError);
   });
@@ -199,5 +201,14 @@ void main() {
     final a = container.get<A>();
     final b = container.get<B>();
     expect(a, isNot(b.a));
+  });
+
+  test('Test Not Found', () {
+    final container = IocContainerBuilder().toContainer();
+    expect(
+        () => container.get<A>(),
+        throwsA(predicate((exception) =>
+            exception is ServiceNotFoundException<A> &&
+            exception.message == 'Service A not found')));
   });
 }

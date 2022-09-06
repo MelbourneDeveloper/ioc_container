@@ -1,5 +1,13 @@
 import 'package:meta/meta.dart';
 
+@immutable
+class ServiceNotFoundException<T> implements Exception {
+  final String message;
+  ServiceNotFoundException(this.message);
+  @override
+  String toString() => 'ServiceNotFoundException: $message';
+}
+
 ///Defines a factory for the service and whether or not it is a singleton.
 @immutable
 class ServiceDefinition<T> {
@@ -23,7 +31,7 @@ class ServiceDefinition<T> {
 class IocContainer {
   ///This is only here for testing and you should not use this in your code
   @visibleForTesting
-  final Map<Type, ServiceDefinition> serviceDefinitionsByType;
+  final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
   ///This is only here for testing and you should not use this in your code
   @visibleForTesting
@@ -40,14 +48,15 @@ class IocContainer {
                   T,
                   () =>
                       serviceDefinitionsByType[T]!.factory(this) as Object) as T
-              : serviceDefinitionsByType[T]!.factory(this))
-          : throw Exception('Service not found');
+              : serviceDefinitionsByType[T]!.factory(this) as T)
+          : throw ServiceNotFoundException<T>(
+              'Service ${(T).toString()} not found');
 }
 
 ///A builder for creating an [IocContainer].
 @immutable
 class IocContainerBuilder {
-  final Map<Type, ServiceDefinition> _serviceDefinitionsByType = {};
+  final Map<Type, ServiceDefinition<dynamic>> _serviceDefinitionsByType = {};
 
   ///Throw an error if a service is added more than once. Set this to true when
   ///you want to add mocks to set of services for a test.
@@ -86,16 +95,18 @@ class IocContainerBuilder {
       _serviceDefinitionsByType.forEach((type, serviceDefinition) {
         if (serviceDefinition.isSingleton) {
           singletons.putIfAbsent(
-              type, () => serviceDefinition.factory(tempContainer));
+              type, () => serviceDefinition.factory(tempContainer) as Object);
         }
       });
 
       return IocContainer(
-          Map<Type, ServiceDefinition>.unmodifiable(_serviceDefinitionsByType),
+          Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
+              _serviceDefinitionsByType),
           Map<Type, Object>.unmodifiable(singletons));
     }
     return IocContainer(
-        Map<Type, ServiceDefinition>.unmodifiable(_serviceDefinitionsByType),
+        Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
+            _serviceDefinitionsByType),
         //Note: this case allows the singletons to be mutable
         // ignore: prefer_const_literals_to_create_immutables
         <Type, Object>{});

@@ -196,10 +196,14 @@ extension IocContainerExtensions on IocContainer {
   ///container. You should only use this on scoped containers
   void dispose() => singletons.forEach(
         (key, value) {
-          if (serviceDefinitionsByType[key] != null &&
-              serviceDefinitionsByType[key]?.dispose != null) {
-            // ignore: prefer_null_aware_method_calls
-            serviceDefinitionsByType[key]!.dispose!(value);
+          final serviceDefinition = serviceDefinitionsByType[key]!;
+
+          if (serviceDefinition.dispose != null) {
+            final dispose = serviceDefinition.dispose;
+
+            if (dispose != null) {
+              dispose(value);
+            }
           }
         },
       );

@@ -194,7 +194,7 @@ extension Extensions on IocContainerBuilder {
 extension IocContainerExtensions on IocContainer {
   ///Gets a service, but each service in the object mesh will have only one
   ///instance. If you want to get multiple scoped objects, call [scoped] to
-  ///get a reusable Ioc Container and then call [get] on that.
+  ///get a reusable [IocContainer] and then call [get] on that.
   T getScoped<T>() => scoped().get<T>();
 
   ///Dispose all items in the scope. Warning: don't use this on your root

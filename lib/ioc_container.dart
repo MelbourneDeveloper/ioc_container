@@ -20,6 +20,7 @@ class ServiceDefinition<T> {
     this.factory, {
     this.isSingleton = false,
     void Function(T service)? dispose,
+    //Issue: https://github.com/MelbourneDeveloper/ioc_container/issues/1
     // ignore: avoid_annotating_with_dynamic
   }) : dispose = ((dynamic service) =>
             dispose != null ? dispose(service as T) : null);

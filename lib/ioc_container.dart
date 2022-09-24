@@ -33,7 +33,14 @@ class ServiceDefinition<T> {
   ) factory;
 
   ///The dispose method that is called when you dispose the scope
-  final void Function()? dispose;
+  final void Function(T service)? dispose;
+
+  ///Creates a new instance of the service definition as a singleton
+  ServiceDefinition<T> asSingleton() => ServiceDefinition<T>(
+        factory,
+        isSingleton: true,
+        dispose: dispose,
+      );
 }
 
 ///A built Ioc Container. To create a new IocContainer, use
@@ -163,10 +170,17 @@ extension Extensions on IocContainerBuilder {
       );
 
   ///Add a factory to the container.
-  void add<T>(T Function(IocContainer container) factory) =>
+  void add<T>(
+    T Function(
+      IocContainer container,
+    )
+        factory, {
+    void Function(T service)? dispose,
+  }) =>
       addServiceDefinition<T>(
         ServiceDefinition<T>(
           (container) => factory(container),
+          dispose: dispose,
         ),
       );
 }
@@ -181,10 +195,13 @@ extension IocContainerExtensions on IocContainer {
   ///Dispose all items in the scope. Warning: don't use this on your root
   ///container. You should only use this on scoped containers
   void dispose() => singletons.forEach(
-        (key, value) => serviceDefinitionsByType.containsKey(key) &&
-                serviceDefinitionsByType[key]?.dispose != null
-            ? serviceDefinitionsByType[key]!.dispose!()
-            : null,
+        (key, value) {
+          if (serviceDefinitionsByType[key] != null &&
+              serviceDefinitionsByType[key]?.dispose != null) {
+            // ignore: prefer_null_aware_method_calls
+            serviceDefinitionsByType[key]!.dispose!(value);
+          }
+        },
       );
 
   ///Creates a new Ioc Container for a particular scope
@@ -192,7 +209,7 @@ extension IocContainerExtensions on IocContainer {
         serviceDefinitionsByType.map<Type, ServiceDefinition<dynamic>>(
           (key, value) => MapEntry(
             key,
-            ServiceDefinition<dynamic>(value.factory, isSingleton: true),
+            value.asSingleton(),
           ),
         ),
         Map<Type, Object>.from(singletons),

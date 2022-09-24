@@ -121,8 +121,14 @@ void main() {
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
       ..add((i) => B(i.get<A>()))
-      ..add((i) => C(i.get<B>()))
-      ..add((i) => D(i.get<B>(), i.get<C>()));
+      ..add<C>(
+        (i) => C(i.get<B>()),
+        dispose: (c) => c.dispose(),
+      )
+      ..add<D>(
+        (i) => D(i.get<B>(), i.get<C>()),
+        dispose: (d) => d.dispose(),
+      );
     final container = builder.toContainer();
     final sc = container.scoped();
     final d = sc.get<D>();

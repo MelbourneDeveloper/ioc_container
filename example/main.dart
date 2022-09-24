@@ -1,29 +1,28 @@
 import 'package:ioc_container/ioc_container.dart';
 
 class A {
-  final String name;
   A(this.name);
+  final String name;
 }
 
 class B {
-  final A a;
   B(this.a);
+  final A a;
 }
 
 class C {
-  final B b;
   C(this.b);
+  final B b;
 }
 
 class D {
+  D(this.b, this.c);
   final B b;
   final C c;
-  D(this.b, this.c);
 }
 
 void main(List<String> arguments) {
-  final builder = IocContainerBuilder();
-  builder
+  final builder = IocContainerBuilder()
     ..addSingletonService(A('A nice instance of A'))
     ..add((i) => B(i.get<A>()))
     ..add((i) => C(i.get<B>()))

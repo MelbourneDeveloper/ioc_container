@@ -61,7 +61,22 @@ void main() {
     expect(container.get<B>().a, a);
   });
 
-  test('Method chaining With Scoping', () {
+  test('Without Scoping', () {
+    final a = A('a');
+    final builder = IocContainerBuilder()
+      ..addSingletonService(a)
+      ..add((i) => B(i.get<A>()))
+      ..add((i) => C(i.get<B>()))
+      ..add((i) => D(i.get<B>(), i.get<C>()));
+    final container = builder.toContainer();
+    final d = container.get<D>();
+    expect(d.c.b.a, a);
+    expect(d.c.b.a.name, 'a');
+    expect(container.singletons.length, 1);
+    expect(identical(d.c.b, d.b), false);
+  });
+
+  test('With Scoping', () {
     final a = A('a');
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
@@ -70,6 +85,22 @@ void main() {
       ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
     final d = container.scoped().get<D>();
+    expect(d.c.b.a, a);
+    expect(d.c.b.a.name, 'a');
+    expect(container.singletons.length, 1);
+    expect(identical(d.c.b, d.b), true);
+  });
+
+  test('With Scoping 2', () {
+    final a = A('a');
+    final builder = IocContainerBuilder()
+      ..addSingletonService(a)
+      ..add((i) => B(i.get<A>()))
+      ..add((i) => C(i.get<B>()))
+      ..add((i) => D(i.get<B>(), i.get<C>()));
+    final container = builder.toContainer();
+    final sc = container.scoped();
+    final d = sc.get<D>();
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');
     expect(container.singletons.length, 1);

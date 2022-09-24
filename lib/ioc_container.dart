@@ -19,6 +19,7 @@ class ServiceDefinition<T> {
   const ServiceDefinition(
     this.factory, {
     this.isSingleton = false,
+    this.dispose,
   });
 
   ///If true, only once instance of the service will be created and shared for
@@ -30,6 +31,9 @@ class ServiceDefinition<T> {
   final T Function(
     IocContainer container,
   ) factory;
+
+  ///The dispose method that is called when you dispose the scope
+  final void Function()? dispose;
 }
 
 ///A built Ioc Container. To create a new IocContainer, use
@@ -170,9 +174,18 @@ extension Extensions on IocContainerBuilder {
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
   ///Gets a service, but each service in the object mesh will have only one
-  ///instance. If you want to get multiple scoped objects, call [scoped] to 
-  ///get a reusable Ioc Container 
+  ///instance. If you want to get multiple scoped objects, call [scoped] to
+  ///get a reusable Ioc Container and then call [get] on that.
   T getScoped<T>() => scoped().get<T>();
+
+  ///Dispose all items in the scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers
+  void dispose() => singletons.forEach(
+        (key, value) => serviceDefinitionsByType.containsKey(key) &&
+                serviceDefinitionsByType[key]?.dispose != null
+            ? serviceDefinitionsByType[key]!.dispose!()
+            : null,
+      );
 
   ///Creates a new Ioc Container for a particular scope
   IocContainer scoped() => IocContainer(

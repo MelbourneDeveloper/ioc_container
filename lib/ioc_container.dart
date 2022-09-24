@@ -51,6 +51,12 @@ class IocContainer {
               : serviceDefinitionsByType[T]!.factory(this) as T)
           : throw ServiceNotFoundException<T>(
               'Service ${(T).toString()} not found');
+
+  IocContainer scoped() => IocContainer(
+      serviceDefinitionsByType.map<Type, ServiceDefinition<dynamic>>(
+          (key, value) => MapEntry(key,
+              ServiceDefinition<dynamic>(value.factory, isSingleton: true))),
+      Map<Type, Object>.from(singletons));
 }
 
 ///A builder for creating an [IocContainer].

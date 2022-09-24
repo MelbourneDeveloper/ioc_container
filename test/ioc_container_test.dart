@@ -13,11 +13,20 @@ class B {
 
 class C {
   C(this.b);
+  bool disposed = false;
+  void dispose() => disposed = true;
   final B b;
 }
 
 class D {
   D(this.b, this.c);
+  bool disposed = false;
+
+  void dispose() {
+    disposed = true;
+    c.dispose();
+  }
+
   final B b;
   final C c;
 }
@@ -61,7 +70,7 @@ void main() {
     expect(container.get<B>().a, a);
   });
 
-  test('Method chaining', () {
+  test('Without Scoping', () {
     final a = A('a');
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
@@ -73,6 +82,59 @@ void main() {
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');
     expect(container.singletons.length, 1);
+    expect(identical(d.c.b, d.b), false);
+  });
+
+  test('With Scoping', () {
+    final a = A('a');
+    final builder = IocContainerBuilder()
+      ..addSingletonService(a)
+      ..add((i) => B(i.get<A>()))
+      ..add((i) => C(i.get<B>()))
+      ..add((i) => D(i.get<B>(), i.get<C>()));
+    final container = builder.toContainer();
+    final d = container.scoped().get<D>();
+    expect(d.c.b.a, a);
+    expect(d.c.b.a.name, 'a');
+    expect(container.singletons.length, 1);
+    expect(identical(d.c.b, d.b), true);
+  });
+
+  test('With Scoping 2', () {
+    final a = A('a');
+    final builder = IocContainerBuilder()
+      ..addSingletonService(a)
+      ..add((i) => B(i.get<A>()))
+      ..add((i) => C(i.get<B>()))
+      ..add((i) => D(i.get<B>(), i.get<C>()));
+    final container = builder.toContainer();
+    final sc = container.scoped();
+    final d = sc.get<D>();
+    expect(d.c.b.a, a);
+    expect(d.c.b.a.name, 'a');
+    expect(container.singletons.length, 1);
+    expect(identical(d.c.b, d.b), true);
+  });
+
+  test('With Scoping And Disposing', () {
+    final a = A('a');
+    final builder = IocContainerBuilder()
+      ..addSingletonService(a)
+      ..add((i) => B(i.get<A>()))
+      ..add<C>(
+        (i) => C(i.get<B>()),
+        dispose: (c) => c.dispose(),
+      )
+      ..add<D>(
+        (i) => D(i.get<B>(), i.get<C>()),
+        dispose: (d) => d.dispose(),
+      );
+    final container = builder.toContainer();
+    final sc = container.scoped();
+    final d = sc.get<D>();
+    sc.dispose();
+    expect(d.disposed, true);
+    expect(d.c.disposed, true);
   });
 
   test('Named Key Factory', () {

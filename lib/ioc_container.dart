@@ -16,10 +16,14 @@ class ServiceNotFoundException<T> implements Exception {
 @immutable
 class ServiceDefinition<T> {
   ///Defines a factory for the service and whether or not it is a singleton.
-  const ServiceDefinition(
+  ServiceDefinition(
     this.factory, {
     this.isSingleton = false,
-  });
+    void Function(T service)? dispose,
+    //Issue: https://github.com/MelbourneDeveloper/ioc_container/issues/1
+    // ignore: avoid_annotating_with_dynamic
+  }) : dispose = ((dynamic service) =>
+            dispose != null ? dispose(service as T) : null);
 
   ///If true, only once instance of the service will be created and shared for
   ///for the lifespan of the app
@@ -30,6 +34,18 @@ class ServiceDefinition<T> {
   final T Function(
     IocContainer container,
   ) factory;
+
+  ///The dispose method that is called when you dispose the scope
+  //Note: we use dynamic here because using T results in a runtime typing error
+  // ignore: avoid_annotating_with_dynamic
+  final void Function(dynamic service) dispose;
+
+  ///Creates a new instance of the service definition as a singleton
+  ServiceDefinition<T> asSingleton() => ServiceDefinition<T>(
+        factory,
+        isSingleton: true,
+        dispose: dispose,
+      );
 }
 
 ///A built Ioc Container. To create a new IocContainer, use
@@ -159,10 +175,44 @@ extension Extensions on IocContainerBuilder {
       );
 
   ///Add a factory to the container.
-  void add<T>(T Function(IocContainer container) factory) =>
+  void add<T>(
+    T Function(
+      IocContainer container,
+    )
+        factory, {
+    void Function(T service)? dispose,
+  }) =>
       addServiceDefinition<T>(
         ServiceDefinition<T>(
           (container) => factory(container),
+          dispose: dispose,
         ),
+      );
+}
+
+///Extensions for IocContainer
+extension IocContainerExtensions on IocContainer {
+  ///Gets a service, but each service in the object mesh will have only one
+  ///instance. If you want to get multiple scoped objects, call [scoped] to
+  ///get a reusable [IocContainer] and then call [get] on that.
+  T getScoped<T>() => scoped().get<T>();
+
+  ///Dispose all items in the scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers
+  void dispose() {
+    for (final type in singletons.keys) {
+      serviceDefinitionsByType[type]!.dispose(singletons[type]);
+    }
+  }
+
+  ///Creates a new Ioc Container for a particular scope
+  IocContainer scoped() => IocContainer(
+        serviceDefinitionsByType.map<Type, ServiceDefinition<dynamic>>(
+          (key, value) => MapEntry(
+            key,
+            value.asSingleton(),
+          ),
+        ),
+        Map<Type, Object>.from(singletons),
       );
 }

@@ -2,24 +2,24 @@ import 'package:ioc_container/ioc_container.dart';
 import 'package:test/test.dart';
 
 class A {
-  final String name;
   A(this.name);
+  final String name;
 }
 
 class B {
-  final A a;
   B(this.a);
+  final A a;
 }
 
 class C {
-  final B b;
   C(this.b);
+  final B b;
 }
 
 class D {
+  D(this.b, this.c);
   final B b;
   final C c;
-  D(this.b, this.c);
 }
 
 class AFactory {
@@ -27,42 +27,43 @@ class AFactory {
   A get(String name) {
     final a = A(name);
     _as.putIfAbsent(name, () => a);
+
     return a;
   }
 }
 
 class SomeService {
-  late final A a;
-  late final A aa;
-  SomeService(AFactory factory) {
-    a = factory.get('a');
-    aa = factory.get('aa');
-  }
+  SomeService(AFactory factory)
+      : a = factory.get('a'),
+        aa = factory.get('aa');
+
+  final A a;
+  final A aa;
 }
 
+//ignore: long-method
 void main() {
   test('Basic singleton', () {
     final a = A('a');
-    final builder = IocContainerBuilder();
-    builder.add((i) => a);
-    builder.add((i) => B(a));
+    final builder = IocContainerBuilder()
+      ..add((i) => a)
+      ..add((i) => B(a));
     final container = builder.toContainer();
     expect(container.get<B>().a, a);
   });
 
   test('Basic Singleton 2', () {
     final a = A('a');
-    final builder = IocContainerBuilder();
-    builder.addSingletonService(a);
-    builder.add((i) => B(a));
+    final builder = IocContainerBuilder()
+      ..addSingletonService(a)
+      ..add((i) => B(a));
     final container = builder.toContainer();
     expect(container.get<B>().a, a);
   });
 
   test('Method chaining', () {
     final a = A('a');
-    final builder = IocContainerBuilder();
-    builder
+    final builder = IocContainerBuilder()
       ..addSingletonService(a)
       ..add((i) => B(i.get<A>()))
       ..add((i) => C(i.get<B>()))
@@ -75,8 +76,7 @@ void main() {
   });
 
   test('Named Key Factory', () {
-    final builder = IocContainerBuilder();
-    builder
+    final builder = IocContainerBuilder()
       ..addSingletonService(AFactory())
       ..add((container) => SomeService(container.get<AFactory>()));
 
@@ -135,16 +135,16 @@ void main() {
 
   test('Test Cant Replace', () {
     expect(
-        () => IocContainerBuilder()
-          ..addSingletonService(A('a'))
-          ..addSingletonService(A('b')),
-        throwsException);
+      () => IocContainerBuilder()
+        ..addSingletonService(A('a'))
+        ..addSingletonService(A('b')),
+      throwsException,
+    );
   });
 
   test('Test Readme', () {
     final a = A('a');
-    final builder = IocContainerBuilder();
-    builder
+    final builder = IocContainerBuilder()
       ..addSingletonService(a)
       ..add((i) => B(i.get<A>()))
       ..add((i) => C(i.get<B>()))
@@ -160,17 +160,27 @@ void main() {
     final container = builder.toContainer();
 
     expect(
-        () => container.serviceDefinitionsByType
-            //ignore: implicit_dynamic_type
-            .addAll({String: ServiceDefinition((c) => 'a', isSingleton: true)}),
-        throwsUnsupportedError);
+      () => container.serviceDefinitionsByType.addAll({
+        //ignore: implicit_dynamic_type
+        String: ServiceDefinition(
+          (c) => 'a',
+          isSingleton: true,
+        ),
+      }),
+      throwsUnsupportedError,
+    );
     final container2 = builder.toContainer();
 
     expect(
-        () => container2.serviceDefinitionsByType
-            //ignore: implicit_dynamic_type
-            .addAll({String: ServiceDefinition((c) => 'a', isSingleton: true)}),
-        throwsUnsupportedError);
+      () => container2.serviceDefinitionsByType.addAll({
+        //ignore: implicit_dynamic_type
+        String: ServiceDefinition(
+          (c) => 'a',
+          isSingleton: true,
+        ),
+      }),
+      throwsUnsupportedError,
+    );
   });
 
   test('Test Lazy', () {
@@ -189,8 +199,10 @@ void main() {
     final a = container.get<A>();
     expect(container.singletons[A] == a, true);
     //Make sure the singletons are immutable
-    expect(() => container.singletons.addAll({String: 'a'}),
-        throwsUnsupportedError);
+    expect(
+      () => container.singletons.addAll({String: 'a'}),
+      throwsUnsupportedError,
+    );
   });
 
   test('Test Transience', () {
@@ -206,9 +218,14 @@ void main() {
   test('Test Not Found', () {
     final container = IocContainerBuilder().toContainer();
     expect(
-        () => container.get<A>(),
-        throwsA(predicate((exception) =>
-            exception is ServiceNotFoundException<A> &&
-            exception.message == 'Service A not found')));
+      () => container.get<A>(),
+      throwsA(
+        predicate(
+          (exception) =>
+              exception is ServiceNotFoundException<A> &&
+              exception.message == 'Service A not found',
+        ),
+      ),
+    );
   });
 }

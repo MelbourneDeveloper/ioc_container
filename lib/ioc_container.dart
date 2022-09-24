@@ -169,6 +169,11 @@ extension Extensions on IocContainerBuilder {
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
+  ///Gets a service, but each service in the object mesh will have only one
+  ///instance. If you want to get multiple scoped objects, call [scoped] to 
+  ///get a reusable Ioc Container 
+  T getScoped<T>() => scoped().get<T>();
+
   ///Creates a new Ioc Container for a particular scope
   IocContainer scoped() => IocContainer(
         serviceDefinitionsByType.map<Type, ServiceDefinition<dynamic>>(

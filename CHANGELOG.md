@@ -15,3 +15,5 @@
 ## 0.8.0
 - Adds scoping with the `scoped()` and `getScoped()` extensions
 - Adds ability to dispose of scoped services with the `dispose` extension
+## 0.9.0
+- Documentation

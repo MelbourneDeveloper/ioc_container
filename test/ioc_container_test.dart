@@ -93,11 +93,11 @@ void main() {
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
-    final d = container.scoped().get<D>();
-    expect(d.c.b.a, a);
-    expect(d.c.b.a.name, 'a');
+    final scoped = container.scoped().get<D>();
+    expect(scoped.c.b.a, a);
+    expect(scoped.c.b.a.name, 'a');
     expect(container.singletons.length, 1);
-    expect(identical(d.c.b, d.b), true);
+    expect(identical(scoped.c.b, scoped.b), true);
   });
 
   test('With Scoping 2', () {
@@ -130,9 +130,9 @@ void main() {
         dispose: (d) => d.dispose(),
       );
     final container = builder.toContainer();
-    final sc = container.scoped();
-    final d = sc.get<D>();
-    sc.dispose();
+    final scoped = container.scoped();
+    final d = scoped.get<D>();
+    scoped.dispose();
     expect(d.disposed, true);
     expect(d.c.disposed, true);
   });

@@ -306,16 +306,75 @@ void main() {
   });
 
   test('Test Async Singleton', () async {
+    var futureCounter = 0;
+
     final builder = IocContainerBuilder()
       ..addSingleton(
         (c) => Future<A>.delayed(
           //Simulate doing some async work
           const Duration(milliseconds: 10),
-          () => A('a'),
+          () {
+            futureCounter++;
+
+            return A('a');
+          },
         ),
       );
     final container = builder.toContainer();
-    final a = await container.init<A>();
-    expect(a, isA<A>());
+
+    final as = await Future.wait([
+      container.init<A>(),
+      container.init<A>(),
+      container.init<A>(),
+      container.init<A>(),
+      container.init<A>(),
+    ]);
+
+    //Ensure all instances are identical
+    expect(identical(as[0], as[1]), true);
+    expect(identical(as[1], as[2]), true);
+    expect(identical(as[2], as[3]), true);
+    expect(identical(as[3], as[4]), true);
+
+    //Expect the future only ran once
+    expect(futureCounter, 1);
+  });
+
+  test('Test Async Transient', () async {
+    var futureCounter = 0;
+
+    final builder = IocContainerBuilder()
+      ..add(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () {
+            futureCounter++;
+
+            return A('a');
+          },
+        ),
+      );
+    final container = builder.toContainer();
+
+    final as = await Future.wait([
+      container.init<A>(),
+      container.init<A>(),
+      container.init<A>(),
+      container.init<A>(),
+      container.init<A>(),
+    ]);
+
+    //Ensure no instances are identical
+    for (var i = 0; i < as.length; i++) {
+      for (var j = 0; j < as.length; j++) {
+        if (i != j) {
+          expect(identical(as[i], as[j]), false);
+        }
+      }
+    }
+
+    //Expect the future only ran once
+    expect(futureCounter, 5);
   });
 }

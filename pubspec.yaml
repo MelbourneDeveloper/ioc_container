@@ -10,7 +10,7 @@ dependencies:
   meta: ^1.7.0
 
 dev_dependencies:
-  austerity: ^0.0.8-beta
+  austerity: ^0.0.9-beta
   dart_code_metrics: ^4.17.1
   lints: ^2.0.0
   test: ^1.16.0

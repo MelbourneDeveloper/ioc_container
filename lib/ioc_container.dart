@@ -16,14 +16,11 @@ class ServiceNotFoundException<T> implements Exception {
 @immutable
 class ServiceDefinition<T> {
   ///Defines a factory for the service and whether or not it is a singleton.
-  ServiceDefinition(
+  const ServiceDefinition(
     this.factory, {
     this.isSingleton = false,
-    void Function(T service)? dispose,
-    //Issue: https://github.com/MelbourneDeveloper/ioc_container/issues/1
-    // ignore: avoid_annotating_with_dynamic
-  }) : dispose = ((dynamic service) =>
-            dispose != null ? dispose(service as T) : null);
+    this.dispose,
+  });
 
   ///If true, only once instance of the service will be created and shared for
   ///for the lifespan of the app
@@ -36,9 +33,7 @@ class ServiceDefinition<T> {
   ) factory;
 
   ///The dispose method that is called when you dispose the scope
-  //Note: we use dynamic here because using T results in a runtime typing error
-  // ignore: avoid_annotating_with_dynamic
-  final void Function(dynamic service) dispose;
+  final void Function(T service)? dispose;
 
   ///Creates a new instance of the service definition as a singleton
   ServiceDefinition<T> asSingleton() => ServiceDefinition<T>(
@@ -46,6 +41,10 @@ class ServiceDefinition<T> {
         isSingleton: true,
         dispose: dispose,
       );
+
+  void _dispose(T instance) {
+    dispose?.call(instance);
+  }
 }
 
 ///A built Ioc Container. To create a new IocContainer, use
@@ -201,7 +200,7 @@ extension IocContainerExtensions on IocContainer {
   ///container. You should only use this on scoped containers
   void dispose() {
     for (final type in singletons.keys) {
-      serviceDefinitionsByType[type]!.dispose(singletons[type]);
+      serviceDefinitionsByType[type]!._dispose(singletons[type]);
     }
   }
 

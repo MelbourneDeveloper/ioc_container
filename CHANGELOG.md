@@ -17,3 +17,5 @@
 - Adds ability to dispose of scoped services with the `dispose` extension
 ## 0.9.0
 - Documentation
+## 0.10.0
+- Documentation

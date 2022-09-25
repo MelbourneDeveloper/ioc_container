@@ -1,6 +1,6 @@
 ## A Dart Ioc Container
 
-ioc_container is a simple IoC Container for Dart and Flutter. You can use it for dependency injection or as a service locator. It has scoping and singleton support. If you've used Provider, you'll probably need an Ioc Container to compliment it. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects.
+ioc_container is a simple IoC Container for Dart and Flutter. You can use it for dependency injection or as a service locator. It has scoping and singleton support. If you've used Provider, you'll probably need an Ioc Container to compliment it. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects. The library is so small that you can just copy the [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) into Dartpad to share your code.
 
 You can do this. It's nice.
 
@@ -47,8 +47,6 @@ expect(d.c.disposed, true);
 You can use an `IocContainer` as a service locator in Flutter and Dart. Just put an instance in a global space and use it to get your dependencies anywhere with scoping. 
 
 _Note: there are many ways to avoid declaring the container globally. You should weigh up your options make sure that declaring the container globally is the right choice for your app_. 
-
-```dart
 
 ```dart
 late final IocContainer container;

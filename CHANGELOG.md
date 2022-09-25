@@ -12,3 +12,6 @@
 - Add more documentation and fix some code analysis issues
 ## 0.7.0
 - Give the name of a missing service in the exception. 
+## 0.8.0
+- Adds scoping with the `scoped()` and `getScoped()` extensions
+- Adds ability to dispose of scoped services with the `dispose` extension

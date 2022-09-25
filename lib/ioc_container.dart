@@ -214,4 +214,7 @@ extension IocContainerExtensions on IocContainer {
         ),
         Map<Type, Object>.from(singletons),
       );
+
+  ///Gets a dependency that requires async initialization. 
+  Future<T> init<T>() async => get<Future<T>>();
 }

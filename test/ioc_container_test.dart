@@ -290,4 +290,32 @@ void main() {
       ),
     );
   });
+
+  test('Test Async', () async {
+    final builder = IocContainerBuilder()
+      ..add(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () => A('a'),
+        ),
+      );
+    final container = builder.toContainer();
+    final a = await container.init<A>();
+    expect(a, isA<A>());
+  });
+
+  test('Test Async Singleton', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () => A('a'),
+        ),
+      );
+    final container = builder.toContainer();
+    final a = await container.init<A>();
+    expect(a, isA<A>());
+  });
 }

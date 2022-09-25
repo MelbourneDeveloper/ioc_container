@@ -374,7 +374,7 @@ void main() {
       }
     }
 
-    //Expect the future only ran once
+    //Expect the future ran 5 times
     expect(futureCounter, 5);
   });
 }

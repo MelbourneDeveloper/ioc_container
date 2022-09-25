@@ -46,6 +46,8 @@ expect(d.c.disposed, true);
 ## Async Initialization
 You can do initialization work when instantiating an instance of your service. Just return a `Future<T>` instead of `T` (or use the `async` keyword). When you want an instance, call the `init()` method instead of `get()`
 
+_Note: If you call `init` twice at the same time, the initialization may happen twice. You have to handle this in your code. It's a known [issue](https://github.com/MelbourneDeveloper/ioc_container/issues/2).
+
 ```dart
 final builder = IocContainerBuilder()
   ..add(

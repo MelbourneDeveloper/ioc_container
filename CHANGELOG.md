@@ -21,3 +21,5 @@
 - Documentation
 ## 0.11.0
 - Add the `init()` extension for async initialization
+## 0.12.0
+- Documentation

@@ -43,6 +43,23 @@ expect(d.disposed, true);
 expect(d.c.disposed, true);
 ```    
 
+## Async Initialization
+You can do initialization work when instantiating an instance of your service. Just return a `Future<T>` instead of `T` (or use the `async` keyword). When you want an instance, call the `init()` method instead of `get()`
+
+```dart
+final builder = IocContainerBuilder()
+  ..add(
+    (c) => Future<A>.delayed(
+      //Simulate doing some async work
+      const Duration(milliseconds: 10),
+      () => A('a'),
+    ),
+  );
+final container = builder.toContainer();
+final a = await container.init<A>();
+expect(a, isA<A>());
+```
+
 ## As a Service Locator
 You can use an `IocContainer` as a service locator in Flutter and Dart. Just put an instance in a global space and use it to get your dependencies anywhere with scoping. 
 

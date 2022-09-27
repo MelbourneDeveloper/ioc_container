@@ -299,10 +299,19 @@ void main() {
           const Duration(milliseconds: 10),
           () => A('a'),
         ),
+      )
+      ..add(
+        (c) => Future<B>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => B(await c.init<A>()),
+        ),
       );
+
     final container = builder.toContainer();
-    final a = await container.init<A>();
-    expect(a, isA<A>());
+    final b = await container.init<B>();
+    expect(b, isA<B>());
+    expect(b.a, isA<A>());
   });
 
   test('Test Async Singleton', () async {

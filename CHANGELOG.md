@@ -27,3 +27,5 @@
 - Documentation
 ## 0.14.0
 - Documentation
+## 0.15.0
+- Documentation

@@ -46,20 +46,31 @@ expect(d.c.disposed, true);
 ## Async Initialization
 You can do initialization work when instantiating an instance of your service. Just return a `Future<T>` instead of `T` (or use the `async` keyword). When you want an instance, call the `init()` method instead of `get()`
 
-_Note: If you call `init()` twice at the same time, the initialization will only happen once_
+_Warning: you must put error handling inside singleton or scoped `async` factories. If a singleton/scoped async factory throws an error, that factory will continue to return a `Future` with an error for the rest of the lifespan of the container._
 
 ```dart
-final builder = IocContainerBuilder()
-  ..add(
-    (c) => Future<A>.delayed(
-      //Simulate doing some async work
-      const Duration(milliseconds: 10),
-      () => A('a'),
-    ),
-  );
-final container = builder.toContainer();
-final a = await container.init<A>();
-expect(a, isA<A>());
+  test('Test Async', () async {
+    final builder = IocContainerBuilder()
+      ..add(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () => A('a'),
+        ),
+      )
+      ..add(
+        (c) => Future<B>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => B(await c.init<A>()),
+        ),
+      );
+
+    final container = builder.toContainer();
+    final b = await container.init<B>();
+    expect(b, isA<B>());
+    expect(b.a, isA<A>());
+  });
 ```
 
 ## As a Service Locator

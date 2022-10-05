@@ -66,18 +66,31 @@ class IocContainer {
   final Map<Type, Object> singletons;
 
   ///Get an instance of the service by type
-  T get<T>() => singletons.containsKey(T)
-      ? singletons[T] as T
-      : serviceDefinitionsByType.containsKey(T)
-          ? (serviceDefinitionsByType[T]!.isSingleton
-              ? singletons.putIfAbsent(
-                  T,
-                  () => serviceDefinitionsByType[T]!.factory(this) as Object,
-                ) as T
-              : serviceDefinitionsByType[T]!.factory(this) as T)
-          : throw ServiceNotFoundException<T>(
-              'Service ${(T).toString()} not found',
-            );
+  T get<T extends Object>() {
+    final serviceDefinition = serviceDefinitionsByType[T];
+
+    if (serviceDefinition == null) {
+      throw ServiceNotFoundException<T>(
+        'Service ${(T).toString()} not found',
+      );
+    }
+
+    if (serviceDefinition.isSingleton) {
+      final singletonValue = singletons[T];
+
+      if (singletonValue != null) {
+        return singletonValue as T;
+      }
+    }
+
+    final service = serviceDefinition.factory(this) as T;
+
+    if (serviceDefinition.isSingleton) {
+      singletons[T] = service;
+    }
+
+    return service;
+  }
 }
 
 ///A builder for creating an [IocContainer].
@@ -194,7 +207,7 @@ extension IocContainerExtensions on IocContainer {
   ///Gets a service, but each service in the object mesh will have only one
   ///instance. If you want to get multiple scoped objects, call [scoped] to
   ///get a reusable [IocContainer] and then call [get] on that.
-  T getScoped<T>() => scoped().get<T>();
+  T getScoped<T extends Object>() => scoped().get<T>();
 
   ///Dispose all items in the scope. Warning: don't use this on your root
   ///container. You should only use this on scoped containers

@@ -16,7 +16,7 @@ class C {
 }
 
 void main() {
-  test('Pudgel', () {
+  test('Test List of Objects', () {
     final builder = IocContainerBuilder()
       ..add(
         (container) => A(
@@ -36,8 +36,8 @@ void main() {
           container.get<C>(),
         ],
       );
-    final instance = builder.toContainer(scopeByDefault: true);
-    final scopeObjects = instance.get<List<Object>>();
+    final instance = builder.toContainer();
+    final scopeObjects = instance.getScoped<List<Object>>();
     final a = scopeObjects[0] as A;
     final b = scopeObjects[1] as B;
     final c = scopeObjects[2] as C;

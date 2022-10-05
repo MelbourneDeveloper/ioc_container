@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:meta/meta.dart';
 
 ///An exception that occurs when the service is not found
@@ -55,7 +57,12 @@ class ServiceDefinition<T> {
 @immutable
 class IocContainer {
   ///Creates an IocContainer. Y
-  const IocContainer(this.serviceDefinitionsByType, this.singletons);
+  const IocContainer(
+    this.serviceDefinitionsByType,
+    this.singletons, {
+    this.scopeByDefault = false,
+    this.isScopedContainer = false,
+  });
 
   ///This is only here for testing and you should not use this in your code
   @visibleForTesting
@@ -65,8 +72,15 @@ class IocContainer {
   @visibleForTesting
   final Map<Type, Object> singletons;
 
+  final bool scopeByDefault;
+  final bool isScopedContainer;
+
   ///Get an instance of the service by type
   T get<T extends Object>() {
+    if (scopeByDefault) {
+      return getScoped<T>();
+    }
+
     final serviceDefinition = serviceDefinitionsByType[T];
 
     if (serviceDefinition == null) {
@@ -75,7 +89,7 @@ class IocContainer {
       );
     }
 
-    if (serviceDefinition.isSingleton) {
+    if (serviceDefinition.isSingleton || isScopedContainer) {
       final singletonValue = singletons[T];
 
       if (singletonValue != null) {
@@ -85,12 +99,35 @@ class IocContainer {
 
     final service = serviceDefinition.factory(this) as T;
 
-    if (serviceDefinition.isSingleton) {
+    if (serviceDefinition.isSingleton || isScopedContainer) {
       singletons[T] = service;
     }
 
     return service;
   }
+
+  ///Gets a service, but each service in the object mesh will have only one
+  ///instance. If you want to get multiple scoped objects, call [scoped] to
+  ///get a reusable [IocContainer] and then call [get] on that.
+  T getScoped<T extends Object>() => scoped().get<T>();
+
+  ///Dispose all items in the scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers
+  void dispose() {
+    for (final type in singletons.keys) {
+      serviceDefinitionsByType[type]!._dispose(singletons[type]);
+    }
+  }
+
+  ///Creates a new Ioc Container for a particular scope
+  IocContainer scoped() => IocContainer(
+        serviceDefinitionsByType,
+        Map<Type, Object>.from(singletons),
+        isScopedContainer: true,
+      );
+
+  ///Gets a dependency that requires async initialization.
+  Future<T> init<T>() async => get<Future<T>>();
 }
 
 ///A builder for creating an [IocContainer].
@@ -127,6 +164,7 @@ class IocContainerBuilder {
     ///If this is true the services will be created when they are requested
     ///and this container will not technically be immutable.
     bool isLazy = false,
+    bool scopeByDefault = false,
   }) {
     if (!isLazy) {
       final singletons = <Type, Object>{};
@@ -147,6 +185,7 @@ class IocContainerBuilder {
           _serviceDefinitionsByType,
         ),
         Map<Type, Object>.unmodifiable(singletons),
+        scopeByDefault: scopeByDefault,
       );
     }
 
@@ -157,6 +196,7 @@ class IocContainerBuilder {
       //Note: this case allows the singletons to be mutable
       // ignore: prefer_const_literals_to_create_immutables
       <Type, Object>{},
+      scopeByDefault: scopeByDefault,
     );
   }
 }
@@ -200,34 +240,4 @@ extension Extensions on IocContainerBuilder {
           dispose: dispose,
         ),
       );
-}
-
-///Extensions for IocContainer
-extension IocContainerExtensions on IocContainer {
-  ///Gets a service, but each service in the object mesh will have only one
-  ///instance. If you want to get multiple scoped objects, call [scoped] to
-  ///get a reusable [IocContainer] and then call [get] on that.
-  T getScoped<T extends Object>() => scoped().get<T>();
-
-  ///Dispose all items in the scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
-    for (final type in singletons.keys) {
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
-    }
-  }
-
-  ///Creates a new Ioc Container for a particular scope
-  IocContainer scoped() => IocContainer(
-        serviceDefinitionsByType.map<Type, ServiceDefinition<dynamic>>(
-          (key, value) => MapEntry(
-            key,
-            value.asSingleton(),
-          ),
-        ),
-        Map<Type, Object>.from(singletons),
-      );
-
-  ///Gets a dependency that requires async initialization.
-  Future<T> init<T>() async => get<Future<T>>();
 }

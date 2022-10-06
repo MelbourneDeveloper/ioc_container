@@ -108,44 +108,14 @@ class IocContainerBuilder {
   }
 
   ///Create an [IocContainer] from the [IocContainerBuilder].
-  ///This will create an instance of each singleton service and store it
-  ///in an immutable list unless you specify [isLazy] as true.
-  IocContainer toContainer({
-    ///If this is true the services will be created when they are requested
-    ///and this container will not technically be immutable.
-    bool isLazy = false,
-  }) {
-    if (!isLazy) {
-      final singletons = <Type, Object>{};
-      final tempContainer = IocContainer(_serviceDefinitionsByType, singletons);
-      _serviceDefinitionsByType.forEach((type, serviceDefinition) {
-        if (serviceDefinition.isSingleton) {
-          singletons.putIfAbsent(
-            type,
-            () => serviceDefinition.factory(
-              tempContainer,
-            ) as Object,
-          );
-        }
-      });
-
-      return IocContainer(
+  IocContainer toContainer() => IocContainer(
         Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
           _serviceDefinitionsByType,
         ),
-        Map<Type, Object>.unmodifiable(singletons),
+        //Note: this case allows the singletons to be mutable
+        // ignore: prefer_const_literals_to_create_immutables
+        <Type, Object>{},
       );
-    }
-
-    return IocContainer(
-      Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
-        _serviceDefinitionsByType,
-      ),
-      //Note: this case allows the singletons to be mutable
-      // ignore: prefer_const_literals_to_create_immutables
-      <Type, Object>{},
-    );
-  }
 }
 
 ///Extensions for IocContainerBuilder
@@ -191,6 +161,21 @@ extension Extensions on IocContainerBuilder {
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
+  ///Initalizes and stores each singleton in case you want a zealous container
+  ///instead of a lazy one
+  void initializeSingletons() {
+    serviceDefinitionsByType.forEach((type, serviceDefinition) {
+      if (serviceDefinition.isSingleton) {
+        singletons.putIfAbsent(
+          type,
+          () => serviceDefinition.factory(
+            this,
+          ) as Object,
+        );
+      }
+    });
+  }
+
   ///Gets a service, but each service in the object mesh will have only one
   ///instance. If you want to get multiple scoped objects, call [scoped] to
   ///get a reusable [IocContainer] and then call [get] on that.

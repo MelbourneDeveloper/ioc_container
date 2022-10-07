@@ -105,29 +105,6 @@ class IocContainer {
 
     return service;
   }
-
-  ///Gets a service, but each service in the object mesh will have only one
-  ///instance. If you want to get multiple scoped objects, call [scoped] to
-  ///get a reusable [IocContainer] and then call [get] on that.
-  T getScoped<T extends Object>() => scoped().get<T>();
-
-  ///Dispose all items in the scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
-    for (final type in singletons.keys) {
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
-    }
-  }
-
-  ///Creates a new Ioc Container for a particular scope
-  IocContainer scoped() => IocContainer(
-        serviceDefinitionsByType,
-        Map<Type, Object>.from(singletons),
-        isScopedContainer: true,
-      );
-
-  ///Gets a dependency that requires async initialization.
-  Future<T> init<T>() async => get<Future<T>>();
 }
 
 ///A builder for creating an [IocContainer].

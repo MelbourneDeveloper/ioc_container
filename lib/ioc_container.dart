@@ -55,8 +55,9 @@ class IocContainer {
   ///The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
-  ///Map of singletons or scoped services by type. If you inject this, you
-  ///initialize these and make the map immutable
+  ///Map of singletons or scoped services by type. This map is probably mutable
+  ///so the container can store scope or singletons, so don't put anything in
+  ///here
   final Map<Type, Object> singletons;
 
   ///Get an instance of the service by type
@@ -84,6 +85,14 @@ class IocContainer {
     }
 
     return service;
+  }
+
+  ///Dispose all singletons or scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers
+  void dispose() {
+    for (final type in singletons.keys) {
+      serviceDefinitionsByType[type]!._dispose(singletons[type]);
+    }
   }
 }
 
@@ -184,14 +193,6 @@ extension IocContainerExtensions on IocContainer {
   ///instance. If you want to get multiple scoped objects, call [scoped] to
   ///get a reusable [IocContainer] and then call [get] on that.
   T getScoped<T extends Object>() => scoped().get<T>();
-
-  ///Dispose all items in the scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
-    for (final type in singletons.keys) {
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
-    }
-  }
 
   ///Creates a new Ioc Container for a particular scope
   IocContainer scoped() => IocContainer(

@@ -18,8 +18,8 @@ class ServiceDefinition<T> {
     this.dispose,
   });
 
-  ///If true, only once instance of the service will be created and shared for
-  ///for the lifespan of the app
+  ///If true, only one instance of the service will be created and shared for
+  ///for the lifespan of the container. 
   final bool isSingleton;
 
   ///The factory that creates the instance of the service and can access other

@@ -29,3 +29,5 @@
 - Documentation
 ## 0.15.0
 - Documentation
+## 1.0.0
+- Breaking change: `toContainer()` no longer initializes all singletons and the isLazy parameter was removed. All initialization is lazy now. If you want to intialize all singletons call the `initializeSingletons()` extension

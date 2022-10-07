@@ -45,17 +45,18 @@ class ServiceDefinition<T> {
 
 ///A built Ioc Container. To create a new IocContainer, use
 ///[IocContainerBuilder]. To get a service from the container, call [get].
-///Builders create immutable containers unless you specify the
-///isLazy option on toContainer(). You can build your own container by injecting
-///service definitions and singletons here
+///Call scoped to get a container that mints scoped services.
 class IocContainer {
-  ///Creates an IocContainer.
+  ///Creates an IocContainer. You can build your own container by injecting
+  ///service definitions and singletons here, but you should probably use
+  ///[IocContainerBuilder] instead.
   const IocContainer(this.serviceDefinitionsByType, this.singletons);
 
   ///The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
-  ///Map of singletons or scoped services by type.
+  ///Map of singletons or scoped services by type. If you inject this, you
+  ///initialize these and make the map immutable
   final Map<Type, Object> singletons;
 
   ///Get an instance of the service by type

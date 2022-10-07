@@ -50,7 +50,11 @@ class IocContainer {
   ///Creates an IocContainer. You can build your own container by injecting
   ///service definitions and singletons here, but you should probably use
   ///[IocContainerBuilder] instead.
-  const IocContainer(this.serviceDefinitionsByType, this.singletons);
+  const IocContainer(
+    this.serviceDefinitionsByType,
+    this.singletons, {
+    this.isScoped = false,
+  });
 
   ///The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
@@ -59,6 +63,10 @@ class IocContainer {
   ///so the container can store scope or singletons, so don't put anything in
   ///here
   final Map<Type, Object> singletons;
+
+  ///If true, this container is a scoped container. Scoped containers never
+  ///create more than one instance of a service
+  final bool isScoped;
 
   ///Get an instance of the service by type
   T get<T extends Object>() {
@@ -70,7 +78,7 @@ class IocContainer {
       );
     }
 
-    if (serviceDefinition.isSingleton) {
+    if (serviceDefinition.isSingleton || isScoped) {
       final singletonValue = singletons[T];
 
       if (singletonValue != null) {
@@ -80,7 +88,7 @@ class IocContainer {
 
     final service = serviceDefinition.factory(this) as T;
 
-    if (serviceDefinition.isSingleton) {
+    if (serviceDefinition.isSingleton || isScoped) {
       singletons[T] = service;
     }
 
@@ -196,13 +204,9 @@ extension IocContainerExtensions on IocContainer {
 
   ///Creates a new Ioc Container for a particular scope
   IocContainer scoped() => IocContainer(
-        serviceDefinitionsByType.map<Type, ServiceDefinition<dynamic>>(
-          (key, value) => MapEntry(
-            key,
-            value.asSingleton(),
-          ),
-        ),
+        serviceDefinitionsByType,
         Map<Type, Object>.from(singletons),
+        isScoped: true,
       );
 
   ///Gets a dependency that requires async initialization.

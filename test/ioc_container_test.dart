@@ -94,6 +94,7 @@ void main() {
       ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
     final scope = container.scoped();
+    expect(scope.isScoped, true);
     final d = scope.get<D>();
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');

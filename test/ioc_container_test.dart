@@ -93,11 +93,13 @@ void main() {
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
-    final scoped = container.scoped().get<D>();
-    expect(scoped.c.b.a, a);
-    expect(scoped.c.b.a.name, 'a');
-    expect(container.singletons.length, 1);
-    expect(identical(scoped.c.b, scoped.b), true);
+    final scope = container.scoped();
+    final d = scope.get<D>();
+    expect(d.c.b.a, a);
+    expect(d.c.b.a.name, 'a');
+    expect(container.singletons.length, 0);
+    expect(scope.singletons.length, 4);
+    expect(identical(d.c.b, d.b), true);
   });
 
   test('With Scoping 2', () {
@@ -108,11 +110,12 @@ void main() {
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
     final container = builder.toContainer();
-    final sc = container.scoped();
-    final d = sc.get<D>();
+    final scope = container.scoped();
+    final d = scope.get<D>();
     expect(d.c.b.a, a);
     expect(d.c.b.a.name, 'a');
-    expect(container.singletons.length, 1);
+    expect(container.singletons.length, 0);
+    expect(scope.singletons.length, 4);
     expect(identical(d.c.b, d.b), true);
   });
 
@@ -170,7 +173,7 @@ void main() {
     final builder = IocContainerBuilder()
       ..addSingleton((c) => B(c.get<A>()))
       ..addSingletonService(A('a'));
-    final container = builder.toContainer();
+    final container = builder.toContainer()..initializeSingletons();
     expect(container.singletons[A], container.get<A>());
     expect(container.singletons[B], container.get<B>());
     expect(container.singletons.length, 2);
@@ -247,7 +250,7 @@ void main() {
 
   test('Test Lazy', () {
     final builder = IocContainerBuilder()..addSingletonService(A('a'));
-    final container = builder.toContainer(isLazy: true);
+    final container = builder.toContainer();
     expect(container.singletons.length, 0);
     final a = container.get<A>();
     expect(container.singletons.length, 1);
@@ -256,15 +259,19 @@ void main() {
 
   test('Test Zealous', () {
     final builder = IocContainerBuilder()..addSingletonService(A('a'));
-    final container = builder.toContainer();
+    final container = builder.toContainer()..initializeSingletons();
     expect(container.singletons.length, 1);
     final a = container.get<A>();
     expect(container.singletons[A] == a, true);
-    //Make sure the singletons are immutable
-    expect(
-      () => container.singletons.addAll({String: 'a'}),
-      throwsUnsupportedError,
-    );
+  });
+
+  test('Test Is Lazy Before And After', () {
+    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final container = builder.toContainer();
+    expect(container.singletons.length, 0);
+    final a = container.get<A>();
+    expect(container.singletons.length, 1);
+    expect(container.singletons[A] == a, true);
   });
 
   test('Test Transience', () {

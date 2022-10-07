@@ -1,9 +1,4 @@
-// ignore_for_file: public_member_api_docs
-
-import 'package:meta/meta.dart';
-
 ///An exception that occurs when the service is not found
-@immutable
 class ServiceNotFoundException<T> implements Exception {
   ///Creates a new instance of [ServiceNotFoundException]
   const ServiceNotFoundException(this.message);
@@ -15,7 +10,6 @@ class ServiceNotFoundException<T> implements Exception {
 }
 
 ///Defines a factory for the service and whether or not it is a singleton.
-@immutable
 class ServiceDefinition<T> {
   ///Defines a factory for the service and whether or not it is a singleton.
   const ServiceDefinition(
@@ -51,25 +45,19 @@ class ServiceDefinition<T> {
 
 ///A built Ioc Container. To create a new IocContainer, use
 ///[IocContainerBuilder]. To get a service from the container, call [get].
-///Builders create immutable containers unless you specify the
-///isLazy option on toContainer(). You can build your own container by injecting
-///service definitions and singletons here
-@immutable
+///Call scoped to get a container that mints scoped services.
 class IocContainer {
-  ///Creates an IocContainer. Y
-  const IocContainer(
-    this.serviceDefinitionsByType,
-    this.singletons, {
-    this.scopeByDefault = false,
-    this.isScopedContainer = false,
-  });
+  ///Creates an IocContainer. You can build your own container by injecting
+  ///service definitions and singletons here, but you should probably use
+  ///[IocContainerBuilder] instead.
+  const IocContainer(this.serviceDefinitionsByType, this.singletons);
 
-  ///This is only here for testing and you should not use this in your code
-  @visibleForTesting
+  ///The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
-  ///This is only here for testing and you should not use this in your code
-  @visibleForTesting
+  ///Map of singletons or scoped services by type. This map is probably mutable
+  ///so the container can store scope or singletons, so don't put anything in
+  ///here
   final Map<Type, Object> singletons;
 
   final bool scopeByDefault;
@@ -105,10 +93,17 @@ class IocContainer {
 
     return service;
   }
+
+  ///Dispose all singletons or scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers
+  void dispose() {
+    for (final type in singletons.keys) {
+      serviceDefinitionsByType[type]!._dispose(singletons[type]);
+    }
+  }
 }
 
 ///A builder for creating an [IocContainer].
-@immutable
 class IocContainerBuilder {
   ///Creates a container builder
   IocContainerBuilder({this.allowOverrides = false});
@@ -139,8 +134,6 @@ class IocContainerBuilder {
         Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
           _serviceDefinitionsByType,
         ),
-        //Note: this case allows the singletons to be mutable
-        // ignore: prefer_const_literals_to_create_immutables
         <Type, Object>{},
       );
 }
@@ -207,14 +200,6 @@ extension IocContainerExtensions on IocContainer {
   ///instance. If you want to get multiple scoped objects, call [scoped] to
   ///get a reusable [IocContainer] and then call [get] on that.
   T getScoped<T extends Object>() => scoped().get<T>();
-
-  ///Dispose all items in the scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
-    for (final type in singletons.keys) {
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
-    }
-  }
 
   ///Creates a new Ioc Container for a particular scope
   IocContainer scoped() => IocContainer(

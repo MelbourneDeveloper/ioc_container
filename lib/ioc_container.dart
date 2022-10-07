@@ -1,7 +1,4 @@
-import 'package:meta/meta.dart';
-
 ///An exception that occurs when the service is not found
-@immutable
 class ServiceNotFoundException<T> implements Exception {
   ///Creates a new instance of [ServiceNotFoundException]
   const ServiceNotFoundException(this.message);
@@ -13,7 +10,6 @@ class ServiceNotFoundException<T> implements Exception {
 }
 
 ///Defines a factory for the service and whether or not it is a singleton.
-@immutable
 class ServiceDefinition<T> {
   ///Defines a factory for the service and whether or not it is a singleton.
   const ServiceDefinition(
@@ -52,17 +48,14 @@ class ServiceDefinition<T> {
 ///Builders create immutable containers unless you specify the
 ///isLazy option on toContainer(). You can build your own container by injecting
 ///service definitions and singletons here
-@immutable
 class IocContainer {
-  ///Creates an IocContainer. Y
+  ///Creates an IocContainer.
   const IocContainer(this.serviceDefinitionsByType, this.singletons);
 
-  ///This is only here for testing and you should not use this in your code
-  @visibleForTesting
+  ///The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
-  ///This is only here for testing and you should not use this in your code
-  @visibleForTesting
+  ///Map of singletons or scoped services by type.
   final Map<Type, Object> singletons;
 
   ///Get an instance of the service by type
@@ -94,7 +87,6 @@ class IocContainer {
 }
 
 ///A builder for creating an [IocContainer].
-@immutable
 class IocContainerBuilder {
   ///Creates a container builder
   IocContainerBuilder({this.allowOverrides = false});
@@ -125,8 +117,6 @@ class IocContainerBuilder {
         Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
           _serviceDefinitionsByType,
         ),
-        //Note: this case allows the singletons to be mutable
-        // ignore: prefer_const_literals_to_create_immutables
         <Type, Object>{},
       );
 }

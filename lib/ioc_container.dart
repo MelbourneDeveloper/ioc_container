@@ -19,7 +19,7 @@ class ServiceDefinition<T> {
   });
 
   ///If true, only one instance of the service will be created and shared for
-  ///for the lifespan of the container. 
+  ///for the lifespan of the container.
   final bool isSingleton;
 
   ///The factory that creates the instance of the service and can access other
@@ -98,9 +98,11 @@ class IocContainer {
   ///Dispose all singletons or scope. Warning: don't use this on your root
   ///container. You should only use this on scoped containers
   void dispose() {
+    assert(isScoped, 'Only dispose scoped containers');
     for (final type in singletons.keys) {
       serviceDefinitionsByType[type]!._dispose(singletons[type]);
     }
+    singletons.clear();
   }
 }
 

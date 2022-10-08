@@ -31,13 +31,6 @@ class ServiceDefinition<T> {
   ///The dispose method that is called when you dispose the scope
   final void Function(T service)? dispose;
 
-  ///Creates a new instance of the service definition as a singleton
-  ServiceDefinition<T> asSingleton() => ServiceDefinition<T>(
-        factory,
-        isSingleton: true,
-        dispose: dispose,
-      );
-
   void _dispose(T instance) {
     dispose?.call(instance);
   }

@@ -293,7 +293,9 @@ void main() {
         predicate(
           (exception) =>
               exception is ServiceNotFoundException<A> &&
-              exception.message == 'Service A not found',
+              exception.message == 'Service A not found' &&
+              exception.toString() ==
+                  'ServiceNotFoundException: Service A not found',
         ),
       ),
     );

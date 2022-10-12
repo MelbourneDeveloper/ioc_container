@@ -383,7 +383,7 @@ void main() {
     );
   });
 
-  test('Test Async With Error', () async {
+  test('Test Async - Recover From Error', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()
@@ -397,9 +397,45 @@ void main() {
 
     throwException = false;
 
-    final a = await container.scoped().init<A>();
+    final scoped = container.scoped();
+    final a = await scoped.init<A>();
 
     expect(a, isA<A>());
+
+    //We can now keep the service that was successfully initialized
+    container.merge(scoped);
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Merge Overwrite', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final scope = container.scoped();
+
+    await container.init<A>();
+    final a2 = await scope.init<A>();
+
+    container.merge(scope, overwrite: true);
+
+    expect(
+      identical(
+        a2,
+        await container.init<A>(),
+      ),
+      true,
+    );
   });
 
   test('Test Async Transient', () async {

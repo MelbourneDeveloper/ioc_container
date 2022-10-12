@@ -206,4 +206,18 @@ extension IocContainerExtensions on IocContainer {
 
   ///Gets a dependency that requires async initialization.
   Future<T> init<T>() async => get<Future<T>>();
+
+  ///Merge the singletons or scope from a container into this container.
+  void merge(
+    IocContainer container, {
+    bool overwrite = false,
+  }) {
+    for (final key in container.singletons.keys) {
+      if (overwrite) {
+        singletons[key] = container.singletons[key]!;
+      } else {
+        singletons.putIfAbsent(key, () => container.singletons[key]!);
+      }
+    }
+  }
 }

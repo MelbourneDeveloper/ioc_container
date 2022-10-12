@@ -359,6 +359,30 @@ void main() {
     expect(futureCounter, 1);
   });
 
+  test('Test Async Singletons With Scope', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) => Future<A>(
+          () => A('a'),
+        ),
+      )
+      ..addSingleton(
+        (c) => Future<B>(
+          () async => B(await c.init<A>()),
+        ),
+      );
+    final container = builder.toContainer();
+    final scoped = container.scoped();
+    final b = await scoped.init<B>();
+    expect(
+      identical(
+        b.a,
+        await scoped.init<A>(),
+      ),
+      true,
+    );
+  });
+
   test('Test Async Transient', () async {
     var futureCounter = 0;
 

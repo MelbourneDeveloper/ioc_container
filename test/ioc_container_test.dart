@@ -383,6 +383,25 @@ void main() {
     );
   });
 
+  test('Test Async With Error', () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    expect(() async => container.scoped().init<A>(), throwsException);
+
+    throwException = false;
+
+    final a = await container.scoped().init<A>();
+
+    expect(a, isA<A>());
+  });
+
   test('Test Async Transient', () async {
     var futureCounter = 0;
 

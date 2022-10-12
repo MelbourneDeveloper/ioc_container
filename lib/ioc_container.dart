@@ -88,6 +88,9 @@ class IocContainer {
     return service;
   }
 
+  ///This is a shortcut for [get]
+  T call<T extends Object>() => get<T>();
+
   ///Dispose all singletons or scope. Warning: don't use this on your root
   ///container. You should only use this on scoped containers
   void dispose() {

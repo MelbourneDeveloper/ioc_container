@@ -58,7 +58,7 @@ void main() {
       ..add((i) => a)
       ..add((i) => B(a));
     final container = builder.toContainer();
-    expect(container.get<B>().a, a);
+    expect(container<B>().a, a);
   });
 
   test('Basic Singleton 2', () {
@@ -74,9 +74,9 @@ void main() {
     final a = A('a');
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
-      ..add((i) => B(i.get<A>()))
-      ..add((i) => C(i.get<B>()))
-      ..add((i) => D(i.get<B>(), i.get<C>()));
+      ..add((i) => B(i<A>()))
+      ..add((i) => C(i<B>()))
+      ..add((i) => D(i<B>(), i.get<C>()));
     final container = builder.toContainer();
     final d = container.get<D>();
     expect(d.c.b.a, a);

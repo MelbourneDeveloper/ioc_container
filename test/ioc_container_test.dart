@@ -477,7 +477,7 @@ void main() {
         a,
         await container.init<A>(),
       ),
-      false,
+      true,
     );
   });
 
@@ -517,5 +517,45 @@ void main() {
 
     //Expect the future ran 5 times
     expect(futureCounter, 5);
+  });
+
+  test('Test scoped Without Using Existing Singletons', () {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final a = container.get<A>();
+    final scope = container.scoped();
+
+    expect(
+      identical(
+        a,
+        scope.get<A>(),
+      ),
+      false,
+    );
+  });
+
+  test('Test scoped Without Using Existing Singletons', () {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final a = container.get<A>();
+    final scope = container.scoped(useExistingSingletons: true);
+
+    expect(
+      identical(
+        a,
+        scope.get<A>(),
+      ),
+      true,
+    );
   });
 }

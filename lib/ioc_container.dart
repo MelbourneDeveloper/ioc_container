@@ -197,10 +197,15 @@ extension IocContainerExtensions on IocContainer {
   ///get a reusable [IocContainer] and then call [get] on that.
   T getScoped<T extends Object>() => scoped().get<T>();
 
-  ///Creates a new Ioc Container for a particular scope
-  IocContainer scoped() => IocContainer(
+  ///Creates a new Ioc Container for a particular scope. Does not use existing
+  ///singletons/scope by default. Warning: if you want to use the existing singletons,
+  ///calling [dispose] will dispose those singletons
+  IocContainer scoped({
+    bool useExistingSingletons = false,
+  }) =>
+      IocContainer(
         serviceDefinitionsByType,
-        Map<Type, Object>.from(singletons),
+        useExistingSingletons ? Map<Type, Object>.from(singletons) : {},
         isScoped: true,
       );
 
@@ -222,7 +227,7 @@ extension IocContainerExtensions on IocContainer {
   Future<T> initSafe<T>() async {
     final scope = scoped();
 
-    final service = scoped().init<T>();
+    final service = scope.init<T>();
 
     merge(scope);
 

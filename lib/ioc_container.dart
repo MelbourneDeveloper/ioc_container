@@ -19,7 +19,7 @@ class ServiceDefinition<T> {
   });
 
   ///If true, only one instance of the service will be created and shared for
-  ///for the lifespan of the container. 
+  ///for the lifespan of the container.
   final bool isSingleton;
 
   ///The factory that creates the instance of the service and can access other
@@ -30,13 +30,6 @@ class ServiceDefinition<T> {
 
   ///The dispose method that is called when you dispose the scope
   final void Function(T service)? dispose;
-
-  ///Creates a new instance of the service definition as a singleton
-  ServiceDefinition<T> asSingleton() => ServiceDefinition<T>(
-        factory,
-        isSingleton: true,
-        dispose: dispose,
-      );
 
   void _dispose(T instance) {
     dispose?.call(instance);
@@ -99,12 +92,17 @@ class IocContainer {
     return service;
   }
 
+  ///This is a shortcut for [get]
+  T call<T extends Object>() => get<T>();
+
   ///Dispose all singletons or scope. Warning: don't use this on your root
   ///container. You should only use this on scoped containers
   void dispose() {
+    assert(isScoped, 'Only dispose scoped containers');
     for (final type in singletons.keys) {
       serviceDefinitionsByType[type]!._dispose(singletons[type]);
     }
+    singletons.clear();
   }
 }
 
@@ -141,10 +139,7 @@ class IocContainerBuilder {
         ),
         <Type, Object>{},
       );
-}
 
-///Extensions for IocContainerBuilder
-extension Extensions on IocContainerBuilder {
   ///Add a singleton service to the container.
   void addSingletonService<T>(T service) => addServiceDefinition(
         ServiceDefinition<T>(
@@ -154,7 +149,7 @@ extension Extensions on IocContainerBuilder {
       );
 
   ///Add a singleton factory to the container. The container
-  ///will only call this once throughout the lifespan of the app
+  ///will only call this once throughout the lifespan of the container
   void addSingleton<T>(
     T Function(
       IocContainer container,
@@ -213,6 +208,48 @@ extension IocContainerExtensions on IocContainer {
         isScoped: true,
       );
 
-  ///Gets a dependency that requires async initialization.
+  ///Gets a dependency that requires async initialization. You can only use
+  ///this on factories that return a Future<>. Warning: if the definition is
+  ///singleton/scoped and the Future fails, the factory will never return a
+  ///valid value. Use [initSafe] to ensure the container doesn't store failed
+  /// singletons
   Future<T> init<T>() async => get<Future<T>>();
+
+  ///See [init].
+  ///Safely makes an async call by creating a temporary scoped container,
+  ///attempting to make the async initialization and merging the result with the
+  ///current container if there is success. Warning: this does not do error
+  ///handling and this also allows reentrancy. If you call this more than once
+  ///in parallel it will create multiple Futures - i.e. make multiple async
+  ///calls. You should execute this in a queue or use a lock to prevent this,
+  ///and perform retries on failure.
+  Future<T> initSafe<T>() async {
+    final scope = scoped();
+
+    final service = scoped().init<T>();
+
+    merge(scope);
+
+    return service;
+  }
+
+  ///Merge the singletons or scope from a container into this container. This
+  ///only moves singleton definitions by default, but you can override this
+  ///with [whereTest]
+  void merge(
+    IocContainer container, {
+    bool overwrite = false,
+    bool Function(Type type)? whereTest,
+  }) {
+    for (final key in container.singletons.keys.where(
+      whereTest ??
+          (type) => serviceDefinitionsByType[type]?.isSingleton ?? false,
+    )) {
+      if (overwrite) {
+        singletons[key] = container.singletons[key]!;
+      } else {
+        singletons.putIfAbsent(key, () => container.singletons[key]!);
+      }
+    }
+  }
 }

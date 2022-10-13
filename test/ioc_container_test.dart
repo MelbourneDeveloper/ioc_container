@@ -58,7 +58,7 @@ void main() {
       ..add((i) => a)
       ..add((i) => B(a));
     final container = builder.toContainer();
-    expect(container.get<B>().a, a);
+    expect(container<B>().a, a);
   });
 
   test('Basic Singleton 2', () {
@@ -74,9 +74,9 @@ void main() {
     final a = A('a');
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
-      ..add((i) => B(i.get<A>()))
-      ..add((i) => C(i.get<B>()))
-      ..add((i) => D(i.get<B>(), i.get<C>()));
+      ..add((i) => B(i<A>()))
+      ..add((i) => C(i<B>()))
+      ..add((i) => D(i<B>(), i.get<C>()));
     final container = builder.toContainer();
     final d = container.get<D>();
     expect(d.c.b.a, a);
@@ -293,7 +293,9 @@ void main() {
         predicate(
           (exception) =>
               exception is ServiceNotFoundException<A> &&
-              exception.message == 'Service A not found',
+              exception.message == 'Service A not found' &&
+              exception.toString() ==
+                  'ServiceNotFoundException: Service A not found',
         ),
       ),
     );
@@ -355,6 +357,128 @@ void main() {
 
     //Expect the future only ran once
     expect(futureCounter, 1);
+  });
+
+  test('Test Async Singletons With Scope', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) => Future<A>(
+          () => A('a'),
+        ),
+      )
+      ..addSingleton(
+        (c) => Future<B>(
+          () async => B(await c.init<A>()),
+        ),
+      );
+    final container = builder.toContainer();
+    final scoped = container.scoped();
+    final b = await scoped.init<B>();
+    expect(
+      identical(
+        b.a,
+        await scoped.init<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Async - Recover From Error', () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    expect(() async => container.scoped().init<A>(), throwsException);
+
+    throwException = false;
+
+    final scoped = container.scoped();
+    final a = await scoped.init<A>();
+
+    expect(a, isA<A>());
+
+    //We can now keep the service that was successfully initialized
+    container.merge(scoped);
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Merge Overwrite', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final scope = container.scoped();
+
+    await container.init<A>();
+    final a2 = await scope.init<A>();
+
+    container.merge(scope, overwrite: true);
+
+    expect(
+      identical(
+        a2,
+        await container.init<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Merge - Scope Non Singleton Scope Not Merged', () async {
+    final builder = IocContainerBuilder()
+      ..add(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final scope = container.scoped();
+
+    await scope.init<A>();
+    final a = await scope.init<A>();
+
+    container.merge(scope, overwrite: true);
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      false,
+    );
+  });
+
+  test('Test initSafe', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final a = await container.initSafe<A>();
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      false,
+    );
   });
 
   test('Test Async Transient', () async {

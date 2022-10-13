@@ -6,3 +6,5 @@
 build/
 
 pubspec.lock
+
+coverage/

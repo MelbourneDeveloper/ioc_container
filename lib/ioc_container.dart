@@ -221,12 +221,18 @@ extension IocContainerExtensions on IocContainer {
     return result;
   }
 
-  ///Merge the singletons or scope from a container into this container.
+  ///Merge the singletons or scope from a container into this container. This
+  ///only moves singleton definitions by default, but you can override this
+  ///with [whereTest]
   void merge(
     IocContainer container, {
     bool overwrite = false,
+    bool Function(Type type)? whereTest,
   }) {
-    for (final key in container.singletons.keys) {
+    for (final key in container.singletons.keys.where(
+      whereTest ??
+          (type) => serviceDefinitionsByType[type]?.isSingleton ?? false,
+    )) {
       if (overwrite) {
         singletons[key] = container.singletons[key]!;
       } else {

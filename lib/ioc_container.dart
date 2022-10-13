@@ -204,14 +204,21 @@ extension IocContainerExtensions on IocContainer {
         isScoped: true,
       );
 
-  ///Gets a dependency that requires async initialization.
+  ///Gets a dependency that requires async initialization. You can only use
+  ///this on factories that return a Future<>. Warning: if the definition is
+  ///singleton/scoped and the Future fails, the factory will never return a
+  ///valid value. Use [initSafe] to ensure the container doesn't store failed
+  /// singletons
   Future<T> init<T>() async => get<Future<T>>();
 
+  ///See [init].
   ///Safely makes an async call by creating a temporary scoped container,
   ///attempts to make the async initialization and merges the result with the
-  ///current container if there is success. Warning: doesn't try to catch
-  ///anything
-  Future<T> tryInit<T>() async {
+  ///current container if there is success. Warning: this does not do error 
+  ///handling and this also allows reentrancy. If you call this more than once 
+  ///in parallel it will create multiple Futures - i.e. make multiple async 
+  ///calls. You should execute this in a queue or use a lock to prevent this.
+  Future<T> initSafe<T>() async {
     final scope = scoped();
 
     final service = scoped().init<T>();

@@ -213,7 +213,7 @@ extension IocContainerExtensions on IocContainer {
 
   ///See [init].
   ///Safely makes an async call by creating a temporary scoped container,
-  ///attempts to make the async initialization and merges the result with the
+  ///attempting to make the async initialization and merging the result with the
   ///current container if there is success. Warning: this does not do error
   ///handling and this also allows reentrancy. If you call this more than once
   ///in parallel it will create multiple Futures - i.e. make multiple async

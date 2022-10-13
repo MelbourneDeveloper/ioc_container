@@ -438,6 +438,39 @@ void main() {
     );
   });
 
+  test('Test Merge - Can Filter With Merge Test', () {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final scope = container.scoped();
+
+    container.get<A>();
+    final a2 = scope.get<A>();
+
+    container.merge(
+      scope,
+      overwrite: true,
+      mergeTest: (
+        type,
+        serviceDefinition,
+        service,
+      ) =>
+          false,
+    );
+
+    expect(
+      identical(
+        a2,
+        container.get<A>(),
+      ),
+      false,
+    );
+  });
+
   test('Test Merge - Scope Non Singleton Scope Not Merged', () async {
     final builder = IocContainerBuilder()
       ..add(

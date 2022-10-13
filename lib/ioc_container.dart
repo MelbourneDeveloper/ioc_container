@@ -207,6 +207,20 @@ extension IocContainerExtensions on IocContainer {
   ///Gets a dependency that requires async initialization.
   Future<T> init<T>() async => get<Future<T>>();
 
+  ///Safely makes an async call by creating a temporary scoped container,
+  ///attempts to make the async initialization and merges the result with the
+  ///current container if there is success. Warning: doesn't try to catch
+  ///anything
+  Future<T> tryInit<T>(void Function(Object e) onError) async {
+    final scope = scoped();
+
+    final result = scope.get<Future<T>>();
+
+    merge(scope);
+
+    return result;
+  }
+
   ///Merge the singletons or scope from a container into this container.
   void merge(
     IocContainer container, {

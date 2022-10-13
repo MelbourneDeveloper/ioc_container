@@ -383,7 +383,7 @@ void main() {
     );
   });
 
-  test('Test Async With Error', () async {
+  test('Test Async - Recover From Error', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()
@@ -397,7 +397,8 @@ void main() {
 
     throwException = false;
 
-    final a = await container.scoped().init<A>();
+    final scoped = container.scoped();
+    final a = await scoped.init<A>();
 
     expect(a, isA<A>());
   });

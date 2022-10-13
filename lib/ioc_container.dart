@@ -211,14 +211,14 @@ extension IocContainerExtensions on IocContainer {
   ///attempts to make the async initialization and merges the result with the
   ///current container if there is success. Warning: doesn't try to catch
   ///anything
-  Future<T> tryInit<T>(void Function(Object e) onError) async {
+  Future<T> tryInit<T>() async {
     final scope = scoped();
 
-    final result = scope.get<Future<T>>();
+    final service = scoped().init<T>();
 
     merge(scope);
 
-    return result;
+    return service;
   }
 
   ///Merge the singletons or scope from a container into this container. This

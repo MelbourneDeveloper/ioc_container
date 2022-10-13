@@ -401,6 +401,84 @@ void main() {
     final a = await scoped.init<A>();
 
     expect(a, isA<A>());
+
+    //We can now keep the service that was successfully initialized
+    container.merge(scoped);
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Merge Overwrite', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final scope = container.scoped();
+
+    await container.init<A>();
+    final a2 = await scope.init<A>();
+
+    container.merge(scope, overwrite: true);
+
+    expect(
+      identical(
+        a2,
+        await container.init<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Merge - Scope Non Singleton Scope Not Merged', () async {
+    final builder = IocContainerBuilder()
+      ..add(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final scope = container.scoped();
+
+    await scope.init<A>();
+    final a = await scope.init<A>();
+
+    container.merge(scope, overwrite: true);
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      false,
+    );
+  });
+
+  test('Test initSafe', () async {
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    final a = await container.initSafe<A>();
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      false,
+    );
   });
 
   test('Test Async Transient', () async {

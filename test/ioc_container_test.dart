@@ -1,5 +1,33 @@
 import 'package:ioc_container/ioc_container.dart';
+import 'package:meta/meta.dart';
 import 'package:test/test.dart';
+
+///An immutable version of the container
+@immutable
+class ImmutableContainer extends IocContainer {
+  ///Creates an immutable version of the container
+  ImmutableContainer(
+    Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType,
+    Map<Type, Object> singletons, {
+    bool isScoped = false,
+  }) : super(
+          serviceDefinitionsByType,
+          Map<Type, Object>.unmodifiable(singletons),
+          isScoped: isScoped,
+        );
+}
+
+extension TestIocContainerExtensions on IocContainer {
+  ImmutableContainer toImmutable() {
+    initializeSingletons();
+
+    return ImmutableContainer(
+      serviceDefinitionsByType,
+      singletons,
+      isScoped: isScoped,
+    );
+  }
+}
 
 class A {
   A(this.name);
@@ -618,6 +646,20 @@ void main() {
         scope.get<A>(),
       ),
       true,
+    );
+  });
+
+  test('Test Extending For Immutability', () {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final container = builder.toContainer().toImmutable();
+
+    expect(container.singletons.length, 1);
+    expect(container.singletons[A], a);
+
+    expect(
+      () => container.singletons.addAll({B: B(A('a'))}),
+      throwsUnsupportedError,
     );
   });
 }

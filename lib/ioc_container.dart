@@ -232,7 +232,7 @@ extension IocContainerExtensions on IocContainer {
   Future<T> initSafe<T>() async {
     final scope = scoped();
 
-    final service = scope.init<T>();
+    final service = await scope.init<T>();
 
     merge(scope);
 

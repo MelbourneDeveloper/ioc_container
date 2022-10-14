@@ -415,6 +415,31 @@ void main() {
     );
   });
 
+  test('Test initSafe - Recover From Error', () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingleton(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    expect(() async => container.initSafe<A>(), throwsException);
+
+    throwException = false;
+
+    final a = await container.initSafe<A>();
+
+    expect(
+      identical(
+        a,
+        await container.init<A>(),
+      ),
+      true,
+    );
+  });
+
   test('Test Merge Overwrite', () async {
     final builder = IocContainerBuilder()
       ..addSingleton(

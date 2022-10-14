@@ -652,13 +652,13 @@ void main() {
   test('Test Extending For Immutability', () {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);
-    final container = builder.toContainer().toImmutable();
+    final immutableContainer = builder.toContainer().toImmutable();
 
-    expect(container.singletons.length, 1);
-    expect(container.singletons[A], a);
+    expect(immutableContainer.singletons.length, 1);
+    expect(immutableContainer.singletons[A], a);
 
     expect(
-      () => container.singletons.addAll({B: B(A('a'))}),
+      () => immutableContainer.singletons.addAll({B: B(A('a'))}),
       throwsUnsupportedError,
     );
   });

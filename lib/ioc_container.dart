@@ -224,11 +224,16 @@ extension IocContainerExtensions on IocContainer {
   ///See [init].
   ///Safely makes an async call by creating a temporary scoped container,
   ///attempting to make the async initialization and merging the result with the
-  ///current container if there is success. Warning: this does not do error
+  ///current container if there is success.
+  ///
+  ///Warning: this does not do error
   ///handling and this also allows reentrancy. If you call this more than once
   ///in parallel it will create multiple Futures - i.e. make multiple async
   ///calls. You should execute this in a queue or use a lock to prevent this,
   ///and perform retries on failure.
+  ///
+  ///Warning: Do not call this inside a factory (in your composition). Only
+  ///call this from the outside, and handle the errors/timeouts gracefully.
   Future<T> initSafe<T>() async {
     final scope = scoped();
 

@@ -427,6 +427,9 @@ void main() {
 
     expect(() async => container.initSafe<A>(), throwsException);
 
+    //We should not have stored the bad future
+    expect(container.singletons.isEmpty, true);
+
     throwException = false;
 
     final a = await container.initSafe<A>();

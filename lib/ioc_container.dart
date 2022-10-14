@@ -93,18 +93,6 @@ class IocContainer {
 
   ///This is a shortcut for [get]
   T call<T extends Object>() => get<T>();
-
-  ///Dispose all singletons or scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
-    assert(isScoped, 'Only dispose scoped containers');
-    for (final type in singletons.keys) {
-      //Note: we don't need to check if the service is a singleton because
-      //singleton service definitions never have dispose
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
-    }
-    singletons.clear();
-  }
 }
 
 ///A builder for creating an [IocContainer].
@@ -182,6 +170,18 @@ class IocContainerBuilder {
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
+  ///Dispose all singletons or scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers
+  void dispose() {
+    assert(isScoped, 'Only dispose scoped containers');
+    for (final type in singletons.keys) {
+      //Note: we don't need to check if the service is a singleton because
+      //singleton service definitions never have dispose
+      serviceDefinitionsByType[type]!._dispose(singletons[type]);
+    }
+    singletons.clear();
+  }
+
   ///Initalizes and stores each singleton in case you want a zealous container
   ///instead of a lazy one
   void initializeSingletons() {

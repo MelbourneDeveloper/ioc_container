@@ -139,27 +139,7 @@ void main() {
     scoped.dispose();
     expect(d.disposed, true);
     expect(d.c.disposed, true);
-  });
-
-  test('Scoped Doesnt Dispose Singletons', () {
-    final a = A('a');
-    final builder = IocContainerBuilder()
-      ..addSingletonService(a)
-      ..add((i) => B(i<A>()))
-      ..add<C>(
-        (i) => C(i<B>()),
-        dispose: (c) => c.dispose(),
-      )
-      ..add<D>(
-        (i) => D(i<B>(), i<C>()),
-        dispose: (d) => d.dispose(),
-      );
-    final container = builder.toContainer();
-    final scoped = container.scoped();
-    final d = container<D>();
-    scoped.dispose();
-    expect(d.disposed, false);
-    expect(d.c.disposed, false);
+    expect(container<D>().disposed, false);
   });
 
   test('Named Key Factory', () {

@@ -16,7 +16,10 @@ class ServiceDefinition<T> {
     this.factory, {
     this.isSingleton = false,
     this.dispose,
-  });
+  }) : assert(
+          !isSingleton || dispose == null,
+          'Singleton factories cannot have a dispose method',
+        );
 
   ///If true, only one instance of the service will be created and shared for
   ///for the lifespan of the container.
@@ -96,6 +99,8 @@ class IocContainer {
   void dispose() {
     assert(isScoped, 'Only dispose scoped containers');
     for (final type in singletons.keys) {
+      //Note: we don't need to check if the service is a singleton because
+      //singleton service definitions never have dispose
       serviceDefinitionsByType[type]!._dispose(singletons[type]);
     }
     singletons.clear();

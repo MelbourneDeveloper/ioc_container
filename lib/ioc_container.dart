@@ -217,11 +217,11 @@ extension IocContainerExtensions on IocContainer {
   ///Gets a dependency that requires async initialization. You can only use
   ///this on factories that return a Future<>. Warning: if the definition is
   ///singleton/scoped and the Future fails, the factory will never return a
-  ///valid value. Use [initSafe] to ensure the container doesn't store failed
-  /// singletons
-  Future<T> init<T>() async => get<Future<T>>();
+  ///valid value. Use [getAsyncSafe] to ensure the container doesn't store
+  ///failed singletons
+  Future<T> getAsync<T>() async => get<Future<T>>();
 
-  ///See [init].
+  ///See [getAsync].
   ///Safely makes an async call by creating a temporary scoped container,
   ///attempting to make the async initialization and merging the result with the
   ///current container if there is success.
@@ -234,10 +234,10 @@ extension IocContainerExtensions on IocContainer {
   ///
   ///Warning: Do not call this inside a factory (in your composition). Only
   ///call this from the outside, and handle the errors/timeouts gracefully.
-  Future<T> initSafe<T>() async {
+  Future<T> getAsyncSafe<T>() async {
     final scope = scoped();
 
-    final service = await scope.init<T>();
+    final service = await scope.getAsync<T>();
 
     merge(scope);
 

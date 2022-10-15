@@ -343,12 +343,12 @@ void main() {
         (c) => Future<B>.delayed(
           //Simulate doing some async work
           const Duration(milliseconds: 10),
-          () async => B(await c.init<A>()),
+          () async => B(await c.getAsync<A>()),
         ),
       );
 
     final container = builder.toContainer();
-    final b = await container.init<B>();
+    final b = await container.getAsync<B>();
     expect(b, isA<B>());
     expect(b.a, isA<A>());
   });
@@ -371,11 +371,11 @@ void main() {
     final container = builder.toContainer();
 
     final as = await Future.wait([
-      container.init<A>(),
-      container.init<A>(),
-      container.init<A>(),
-      container.init<A>(),
-      container.init<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
     ]);
 
     //Ensure all instances are identical
@@ -397,16 +397,16 @@ void main() {
       )
       ..addSingleton(
         (c) => Future<B>(
-          () async => B(await c.init<A>()),
+          () async => B(await c.getAsync<A>()),
         ),
       );
     final container = builder.toContainer();
     final scoped = container.scoped();
-    final b = await scoped.init<B>();
+    final b = await scoped.getAsync<B>();
     expect(
       identical(
         b.a,
-        await scoped.init<A>(),
+        await scoped.getAsync<A>(),
       ),
       true,
     );
@@ -422,12 +422,12 @@ void main() {
 
     final container = builder.toContainer();
 
-    expect(() async => container.scoped().init<A>(), throwsException);
+    expect(() async => container.scoped().getAsync<A>(), throwsException);
 
     throwException = false;
 
     final scoped = container.scoped();
-    final a = await scoped.init<A>();
+    final a = await scoped.getAsync<A>();
 
     expect(a, isA<A>());
 
@@ -437,7 +437,7 @@ void main() {
     expect(
       identical(
         a,
-        await container.init<A>(),
+        await container.getAsync<A>(),
       ),
       true,
     );
@@ -453,19 +453,19 @@ void main() {
 
     final container = builder.toContainer();
 
-    expect(() async => container.initSafe<A>(), throwsException);
+    expect(() async => container.getAsyncSafe<A>(), throwsException);
 
     //We should not have stored the bad future
     expect(container.singletons.isEmpty, true);
 
     throwException = false;
 
-    final a = await container.initSafe<A>();
+    final a = await container.getAsyncSafe<A>();
 
     expect(
       identical(
         a,
-        await container.init<A>(),
+        await container.getAsync<A>(),
       ),
       true,
     );
@@ -481,15 +481,15 @@ void main() {
 
     final scope = container.scoped();
 
-    await container.init<A>();
-    final a2 = await scope.init<A>();
+    await container.getAsync<A>();
+    final a2 = await scope.getAsync<A>();
 
     container.merge(scope, overwrite: true);
 
     expect(
       identical(
         a2,
-        await container.init<A>(),
+        await container.getAsync<A>(),
       ),
       true,
     );
@@ -538,15 +538,15 @@ void main() {
 
     final scope = container.scoped();
 
-    await scope.init<A>();
-    final a = await scope.init<A>();
+    await scope.getAsync<A>();
+    final a = await scope.getAsync<A>();
 
     container.merge(scope, overwrite: true);
 
     expect(
       identical(
         a,
-        await container.init<A>(),
+        await container.getAsync<A>(),
       ),
       false,
     );
@@ -560,12 +560,12 @@ void main() {
 
     final container = builder.toContainer();
 
-    final a = await container.initSafe<A>();
+    final a = await container.getAsyncSafe<A>();
 
     expect(
       identical(
         a,
-        await container.init<A>(),
+        await container.getAsync<A>(),
       ),
       true,
     );
@@ -589,11 +589,11 @@ void main() {
     final container = builder.toContainer();
 
     final as = await Future.wait([
-      container.init<A>(),
-      container.init<A>(),
-      container.init<A>(),
-      container.init<A>(),
-      container.init<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
     ]);
 
     //Ensure no instances are identical

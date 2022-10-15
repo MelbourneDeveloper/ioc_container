@@ -353,6 +353,44 @@ void main() {
     expect(b.a, isA<A>());
   });
 
+  test('Test addAsync', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () => A('a'),
+        ),
+      );
+
+    final container = builder.toContainer();
+    final a = await container.getAsync<A>();
+    expect(a.name, 'a');
+  });
+
+  test('Test addAsync with Dispose', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync(
+        (c) => Future<B>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => B(A('a')),
+        ),
+      )
+      ..addAsync<C>(
+        (c) => Future<C>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => C(await c.getAsync<B>()),
+        ),
+        dispose: (c) => c.dispose(),
+      );
+
+    final scope = builder.toContainer().scoped();
+    final c = await scope.getAsync<C>();
+    expect(c.disposed, true);
+  });
+
   test('Test Async Singleton', () async {
     var futureCounter = 0;
 

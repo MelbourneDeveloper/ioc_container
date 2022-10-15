@@ -166,6 +166,22 @@ class IocContainerBuilder {
           dispose: dispose,
         ),
       );
+
+  ///Adds an async [ServiceDefinition]
+  void addAsync<T>(
+    Future<T> Function(
+      IocContainer container,
+    )
+        factory, {
+    void Function(T service)? dispose,
+  }) =>
+      add<Future<T>>(
+        factory,
+        dispose: (future) async {
+          final value = await future;
+          dispose?.call(value);
+        },
+      );
 }
 
 ///Extensions for IocContainer

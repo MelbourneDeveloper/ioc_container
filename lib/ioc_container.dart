@@ -192,7 +192,7 @@ class IocContainerBuilder {
 
   ///Add an async singleton factory to the container. The container
   ///will only call the factory once throughout the lifespan of the container
-  void addAsyncSingleton<T>(
+  void addSingletonAsync<T>(
     Future<T> Function(
       IocContainer container,
     )

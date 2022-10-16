@@ -420,6 +420,21 @@ void main() {
     expect(e.disposed, true);
   });
 
+  test('Test addAsync with No Dispose Method', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync<A>(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => A('a'),
+        ),
+      );
+
+    final scope = builder.toContainer().scoped();
+    await scope.getAsync<A>();
+    await scope.dispose();
+  });
+
   test('Test Async Singleton', () async {
     var futureCounter = 0;
 
@@ -745,12 +760,11 @@ void main() {
     );
   });
 
-
   test('Test addAsyncSingleton', () async {
     var futureCounter = 0;
 
     final builder = IocContainerBuilder()
-      ..addAsyncSingleton<A>(
+      ..addSingletonAsync<A>(
         (c) => Future<A>.delayed(
           //Simulate doing some async work
           const Duration(milliseconds: 10),

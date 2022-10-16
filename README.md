@@ -14,81 +14,73 @@ This library is fast and holds up to comparable libraries in terms of performanc
 
 It's a perfect complement to Provider or InheritedWidgets in Flutter. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects.
 
-You can do this. It's nice.
+This example adds a singleton and three transient dependencies to the container. We build the container by calling `toContainer()`. Lastly we get dependencies from the container by calling `get<T>()`, `getAsync<T>()` or just like the last line here. 
 
 ```dart
-final a = A('a');
-final builder = IocContainerBuilder();
-builder
-  //Singletons last for the lifespan of the app
-  ..addSingletonService(a)
-  ..add((i) => B(i.get<A>()))
-  ..add((i) => C(i.get<B>()))
-  ..add((i) => D(i.get<B>(), i.get<C>()));
+final builder = IocContainerBuilder()
+  ..addSingletonService(A('a'))
+  ..add((container) => B(container<A>()))
+  ..add((container) => C(container<B>()))
+  ..add((container) => D(container<B>(), container<C>()));
 final container = builder.toContainer();
-var d = container.get<D>();
-expect(d.c.b.a, a);
-expect(d.c.b.a.name, 'a');
+final d = container<D>();
 ```
 
 ## Scoping
-You can create a scoped container that will never create more than one instance of an object by type within the scope. You can check this example out in the tests. In this example, we create an instance of `D` but the object graph only has four object references. All instances of `A`, `B`, `C`, and `D` are the same instance. This is because the scoped container is only creating one instance of each type. When you are finished with the scoped instances, you can call `dispose()` to dispose everything.
+You can create a scoped container that will never create more than one instance of an object by type within the scope. In this example, we create an instance of `D` but the object graph only has four object references. All instances of `A`, `B`, `C`, and `D` are the same instance. This is because the scoped container is only creating one instance of each type. When you are finished with the scoped instances, you can await `dispose()` to dispose everything.
 
 ```dart
-final a = A('a');
 final builder = IocContainerBuilder()
-  ..addSingletonService(a)
-  ..add((i) => B(i.get<A>()))
+  ..addSingletonService(A('a'))
+  ..add((i) => B(i<A>()))
   ..add<C>(
-    (i) => C(i.get<B>()),
+    (i) => C(i<B>()),
     dispose: (c) => c.dispose(),
   )
   ..add<D>(
-    (i) => D(i.get<B>(), i.get<C>()),
+    (i) => D(i<B>(), i<C>()),
     dispose: (d) => d.dispose(),
   );
 final container = builder.toContainer();
-final scoped = container.scoped();
-final d = scoped.get<D>();
-scoped.dispose();
+final scope = container.scoped();
+final d = scope<D>();
+await scope.dispose();
 expect(d.disposed, true);
 expect(d.c.disposed, true);
 ```    
 
 ## Async Initialization
-You can do initialization work when instantiating an instance of your service. Just return a `Future<T>` instead of `T` (or use the `async` keyword). When you want an instance, call the `init()` method instead of `get()`
+You can do initialization work when instantiating an instance of your service. Just use `addAsync()` or `addSingletonAsync()`. When you want an instance, call the `getAsync()` method instead of `get()`. 
 
-_Warning: you must put error handling inside singleton or scoped `async` factories. If a singleton/scoped async factory throws an error, that factory will continue to return a `Future` with an error for the rest of the lifespan of the container._
+If you need to instantiate an async singleton that could throw an error, use `getAsyncSafe()`. This method does not store the singleton until it awaits successfully. But, it does allow reentrancy so you have to guard against calling it multiple times in parallel. 
+
+_Warning: if you get a singleton with getAsync() and the calls fails, the singleton will always return a `Future` with an error for the lifespan of the container_
 
 ```dart
-  test('Test Async', () async {
-    final builder = IocContainerBuilder()
-      ..add(
-        (c) => Future<A>.delayed(
-          //Simulate doing some async work
-          const Duration(milliseconds: 10),
-          () => A('a'),
-        ),
-      )
-      ..add(
-        (c) => Future<B>.delayed(
-          //Simulate doing some async work
-          const Duration(milliseconds: 10),
-          () async => B(await c.init<A>()),
-        ),
-      );
+final builder = IocContainerBuilder()
+  ..add(
+    (c) => Future<A>.delayed(
+      //Simulate doing some async work
+      const Duration(milliseconds: 10),
+      () => A('a'),
+    ),
+  )
+  ..add(
+    (c) => Future<B>.delayed(
+      //Simulate doing some async work
+      const Duration(milliseconds: 10),
+      () async => B(await c.getAsync<A>()),
+    ),
+  );
 
-    final container = builder.toContainer();
-    final b = await container.init<B>();
-    expect(b, isA<B>());
-    expect(b.a, isA<A>());
-  });
+final container = builder.toContainer();
+final b = await container.getAsync<B>();
 ```
 
 ## Performance Comparison Benchmarks
 Check out the [benchmarks folder](https://github.com/MelbourneDeveloper/ioc_container/tree/benchmarks/benchmarks) of the GitHub repository to check out the benchmarks. 
 
-_*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. I invite you and the library authors to check these and let me know if there are mistakes.*_
+_*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. I invite you and the library authors to check these and let me know if there are any mistakes*_
 
 macOS - Mac Mini - 3.2 Ghz 6 Core Intel Core i7
 

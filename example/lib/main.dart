@@ -12,26 +12,27 @@ class AppChangeNotifier extends ChangeNotifier {
 }
 
 ///This is the composition root. This is where we compose or "wire up" our dependencies.
-IocContainerBuilder compose() => IocContainerBuilder()
-  ..addSingleton<AppChangeNotifier>(
-    (container) => AppChangeNotifier(),
-  );
+IocContainerBuilder compose({bool allowOverrides = false}) =>
+    IocContainerBuilder(allowOverrides: allowOverrides)
+      ..addSingleton<AppChangeNotifier>(
+        (container) => AppChangeNotifier(),
+      );
 
 void main() {
   runApp(
     MyApp(
-      iocContainer: compose().toContainer(),
+      container: compose().toContainer(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({
-    required this.iocContainer,
+    required this.container,
     super.key,
   });
 
-  final IocContainer iocContainer;
+  final IocContainer container;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
         animation: appChangeNotifier,
         builder: (context, bloobit) => MyHomePage(
           title: 'Change Notifier Sample',
-          appChangeNotifier: iocContainer<AppChangeNotifier>(),
+          appChangeNotifier: container<AppChangeNotifier>(),
         ),
       ),
     );

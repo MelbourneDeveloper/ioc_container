@@ -59,6 +59,11 @@ class D {
   final C c;
 }
 
+class E {
+  bool disposed = false;
+  Future<void> dispose() async => disposed = true;
+}
+
 class AFactory {
   final Map<String, A> _as = {};
   A get(String name) {
@@ -148,7 +153,7 @@ void main() {
     expect(identical(d.c.b, d.b), true);
   });
 
-  test('With Scoping And Disposing', () {
+  test('With Scoping And Disposing', () async {
     final a = A('a');
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
@@ -164,7 +169,13 @@ void main() {
     final container = builder.toContainer();
     final scoped = container.scoped();
     final d = scoped.get<D>();
-    scoped.dispose();
+    //BREAKING CHANGE
+    //This used to work without await, but now it's async
+    await scoped.dispose();
+
+    //This also works if we don't use await above
+    //await Future<void>.delayed(const Duration(milliseconds: 100));
+
     expect(d.disposed, true);
     expect(d.c.disposed, true);
     expect(container<D>().disposed, false);
@@ -351,6 +362,62 @@ void main() {
     final b = await container.getAsync<B>();
     expect(b, isA<B>());
     expect(b.a, isA<A>());
+  });
+
+  test('Test addAsync', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () => A('a'),
+        ),
+      );
+
+    final container = builder.toContainer();
+    final a = await container.getAsync<A>();
+    expect(a.name, 'a');
+  });
+
+  test('Test addAsync with Dispose', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync(
+        (c) => Future<B>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => B(A('a')),
+        ),
+      )
+      ..addAsync<C>(
+        (c) => Future<C>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => C(await c.getAsync<B>()),
+        ),
+        disposeAsync: (c) async => c.dispose(),
+      );
+
+    final scope = builder.toContainer().scoped();
+    final c = await scope.getAsync<C>();
+    await scope.dispose();
+    expect(c.disposed, true);
+  });
+
+  test('Test addAsync with Async Dispose', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync<E>(
+        (c) => Future<E>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => E(),
+        ),
+        disposeAsync: (e) async => e.dispose(),
+      );
+
+    final scope = builder.toContainer().scoped();
+    final e = await scope.getAsync<E>();
+    await scope.dispose();
+    expect(e.disposed, true);
   });
 
   test('Test Async Singleton', () async {
@@ -660,6 +727,21 @@ void main() {
     expect(
       () => immutableContainer.singletons.addAll({B: B(A('a'))}),
       throwsUnsupportedError,
+    );
+  });
+
+  test('Test async and sync dispose Throws Exception', () {
+    expect(
+      () => ServiceDefinition<String>(
+        (c) => '',
+        dispose: (s)
+            //ignore: no-empty-block
+            {},
+        disposeAsync: (s) async
+            //ignore: no-empty-block
+            {},
+      ),
+      throwsA(isA<Error>()),
     );
   });
 }

@@ -16,9 +16,14 @@ class ServiceDefinition<T> {
     this.factory, {
     this.isSingleton = false,
     this.dispose,
-  }) : assert(
+    this.disposeAsync,
+  })  : assert(
           !isSingleton || dispose == null,
           'Singleton factories cannot have a dispose method',
+        ),
+        assert(
+          dispose == null || disposeAsync == null,
+          "Service definitions can't have both dispose and disposeAsync",
         );
 
   ///If true, only one instance of the service will be created and shared for
@@ -34,9 +39,12 @@ class ServiceDefinition<T> {
   ///The dispose method that is called when you dispose the scope
   final void Function(T service)? dispose;
 
-  void _dispose(T instance) {
-    dispose?.call(instance);
-  }
+  ///The async dispose method that is called when you dispose the scope
+  final Future<void> Function(T service)? disposeAsync;
+
+  void _dispose(T instance) => dispose?.call(instance);
+
+  Future<void> _disposeAsync(T instance) async => disposeAsync?.call(instance);
 }
 
 ///A built Ioc Container. To create a new IocContainer, use
@@ -166,18 +174,39 @@ class IocContainerBuilder {
           dispose: dispose,
         ),
       );
+
+  ///Adds an async [ServiceDefinition]
+  void addAsync<T>(
+    Future<T> Function(
+      IocContainer container,
+    )
+        factory, {
+    Future<void> Function(T service)? disposeAsync,
+  }) =>
+      addServiceDefinition<Future<T>>(
+        ServiceDefinition<Future<T>>(
+          (container) async => factory(container),
+          disposeAsync: (service) async => disposeAsync?.call(await service),
+        ),
+      );
 }
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
   ///Dispose all singletons or scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
+  ///container. You should only use this on scoped containers.
+  Future<void> dispose() async {
     assert(isScoped, 'Only dispose scoped containers');
     for (final type in singletons.keys) {
       //Note: we don't need to check if the service is a singleton because
       //singleton service definitions never have dispose
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
+      final serviceDefinition = serviceDefinitionsByType[type]!;
+
+      //We can't do a null check here because if a Dart issue
+
+      serviceDefinition._dispose.call(singletons[type]);
+
+      await serviceDefinition._disposeAsync(singletons[type]);
     }
     singletons.clear();
   }

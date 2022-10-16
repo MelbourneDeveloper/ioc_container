@@ -36,15 +36,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appChangeNotifier = AppChangeNotifier();
-
     return MaterialApp(
       title: 'Change Notifier Sample',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: AnimatedBuilder(
-        animation: appChangeNotifier,
+        animation: container<AppChangeNotifier>(),
         builder: (context, bloobit) => MyHomePage(
           title: 'Change Notifier Sample',
           appChangeNotifier: container<AppChangeNotifier>(),

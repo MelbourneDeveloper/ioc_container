@@ -185,7 +185,7 @@ class IocContainerBuilder {
   }) =>
       addServiceDefinition<Future<T>>(
         ServiceDefinition<Future<T>>(
-          (container) => factory(container),
+          (container) async => factory(container),
           disposeAsync: (service) async => disposeAsync?.call(await service),
         ),
       );

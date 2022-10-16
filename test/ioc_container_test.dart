@@ -59,6 +59,11 @@ class D {
   final C c;
 }
 
+class E {
+  bool disposed = false;
+  Future<void> dispose() async => disposed = true;
+}
+
 class AFactory {
   final Map<String, A> _as = {};
   A get(String name) {
@@ -396,6 +401,23 @@ void main() {
     final c = await scope.getAsync<C>();
     await scope.dispose();
     expect(c.disposed, true);
+  });
+
+  test('Test addAsync with Async Dispose', () async {
+    final builder = IocContainerBuilder()
+      ..addAsync<E>(
+        (c) => Future<E>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () async => E(),
+        ),
+        disposeAsync: (e) async => e.dispose(),
+      );
+
+    final scope = builder.toContainer().scoped();
+    final e = await scope.getAsync<E>();
+    await scope.dispose();
+    expect(e.disposed, true);
   });
 
   test('Test Async Singleton', () async {

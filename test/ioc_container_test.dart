@@ -744,4 +744,40 @@ void main() {
       throwsA(isA<Error>()),
     );
   });
+
+
+  test('Test addAsyncSingleton', () async {
+    var futureCounter = 0;
+
+    final builder = IocContainerBuilder()
+      ..addAsyncSingleton<A>(
+        (c) => Future<A>.delayed(
+          //Simulate doing some async work
+          const Duration(milliseconds: 10),
+          () {
+            futureCounter++;
+
+            return A('a');
+          },
+        ),
+      );
+    final container = builder.toContainer();
+
+    final as = await Future.wait([
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+      container.getAsync<A>(),
+    ]);
+
+    //Ensure all instances are identical
+    expect(identical(as[0], as[1]), true);
+    expect(identical(as[1], as[2]), true);
+    expect(identical(as[2], as[3]), true);
+    expect(identical(as[3], as[4]), true);
+
+    //Expect the future only ran once
+    expect(futureCounter, 1);
+  });
 }

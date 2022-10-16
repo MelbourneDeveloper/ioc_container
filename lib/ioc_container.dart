@@ -189,6 +189,21 @@ class IocContainerBuilder {
           disposeAsync: (service) async => disposeAsync?.call(await service),
         ),
       );
+
+  ///Add an async singleton factory to the container. The container
+  ///will only call the factory once throughout the lifespan of the container
+  void addAsyncSingleton<T>(
+    Future<T> Function(
+      IocContainer container,
+    )
+        factory,
+  ) =>
+      addServiceDefinition<Future<T>>(
+        ServiceDefinition<Future<T>>(
+          isSingleton: true,
+          (container) async => factory(container),
+        ),
+      );
 }
 
 ///Extensions for IocContainer

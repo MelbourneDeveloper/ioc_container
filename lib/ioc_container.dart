@@ -16,6 +16,7 @@ class ServiceDefinition<T> {
     this.factory, {
     this.isSingleton = false,
     this.dispose,
+    this.disposeAsync,
   }) : assert(
           !isSingleton || dispose == null,
           'Singleton factories cannot have a dispose method',
@@ -34,8 +35,22 @@ class ServiceDefinition<T> {
   ///The dispose method that is called when you dispose the scope
   final void Function(T service)? dispose;
 
+  ///The async dispose method that is called when you dispose the scope
+  final Future<void> Function(T service)? disposeAsync;
+
   void _dispose(T instance) {
     dispose?.call(instance);
+  }
+
+  Future<void> _disposeAsync(T instance) async {
+    if (dispose != null) {
+      dispose!(instance);
+
+      return;
+    }
+    if (disposeAsync != null) {
+      return disposeAsync!.call(instance);
+    }
   }
 }
 
@@ -186,14 +201,49 @@ class IocContainerBuilder {
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
-  ///Dispose all singletons or scope. Warning: don't use this on your root
-  ///container. You should only use this on scoped containers
-  void dispose() {
+  ///Dispose all singletons or scope.
+  ///Warning: don't use this on your root container. You should only use this
+  ///on scoped containers.
+  ///Warning: Prefer [disposeAsync] for async definitions.
+  ///This call does not await futures so don't set
+  ///disposeAsyncSingletons to true if you need to await async disposal
+  void dispose({bool disposeAsyncSingletons = false}) {
     assert(isScoped, 'Only dispose scoped containers');
     for (final type in singletons.keys) {
       //Note: we don't need to check if the service is a singleton because
       //singleton service definitions never have dispose
-      serviceDefinitionsByType[type]!._dispose(singletons[type]);
+      final serviceDefinition = serviceDefinitionsByType[type]!;
+      if (serviceDefinition.dispose != null) {
+        serviceDefinition._dispose(singletons[type]);
+        continue;
+      }
+
+      if (disposeAsyncSingletons && serviceDefinition.disposeAsync != null) {
+        // ignore: discarded_futures
+        serviceDefinition._disposeAsync(singletons[type]);
+        continue;
+      }
+    }
+    singletons.clear();
+  }
+
+  ///Dispose all singletons or scope and await their disposal
+  Future<void> disposeAsync({bool disposeAsyncSingletons = false}) async {
+    assert(isScoped, 'Only dispose scoped containers');
+    for (final type in singletons.keys) {
+      //Note: we don't need to check if the service is a singleton because
+      //singleton service definitions never have dispose
+      final serviceDefinition = serviceDefinitionsByType[type]!;
+      if (serviceDefinition.dispose != null) {
+        serviceDefinition._dispose(singletons[type]);
+        continue;
+      }
+
+      if (disposeAsyncSingletons && serviceDefinition.disposeAsync != null) {
+        // ignore: discarded_futures
+        await serviceDefinition._disposeAsync(singletons[type]);
+        continue;
+      }
     }
     singletons.clear();
   }

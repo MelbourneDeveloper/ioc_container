@@ -388,6 +388,7 @@ void main() {
 
     final scope = builder.toContainer().scoped();
     final c = await scope.getAsync<C>();
+    await scope.disposeAsync();
     expect(c.disposed, true);
   });
 

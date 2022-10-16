@@ -58,14 +58,14 @@ _Warning: if you get a singleton with getAsync() and the calls fails, the single
 
 ```dart
 final builder = IocContainerBuilder()
-  ..add(
+  ..addAsync(
     (c) => Future<A>.delayed(
       //Simulate doing some async work
       const Duration(milliseconds: 10),
       () => A('a'),
     ),
   )
-  ..add(
+  ..addAsync(
     (c) => Future<B>.delayed(
       //Simulate doing some async work
       const Duration(milliseconds: 10),

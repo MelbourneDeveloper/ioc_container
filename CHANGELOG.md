@@ -30,5 +30,15 @@
 ## 0.15.0
 - Documentation
 ## 1.0.0
-- **Performance enhancement**: there is a big imrpovement on the `get()` method. 
-- **Breaking change**: `toContainer()` no longer initializes all singletons and the isLazy parameter was removed. All initialization is lazy now. If you want to intialize all singletons call the `initializeSingletons()` extension
+## Async Focus
+This version focuses on async initalization. New methods `addAsync()` and `addSingletonAsync()` make it easy to add async factories, and you can now perform async disposals. Call `getAsync()` or `getAsyncSafe()` to get async services. 
+## Performance enhancement
+There is a big improvement on the `get()` method. This version brings a set of benchmarks that measure performance against similar libraries. Check the benchmarks folder.
+## Breaking Changes 
+- The `dispose()` method now returns a future. If you need to dispose services and wait for the result, you must `await` this call
+- `toContainer()` no longer initializes all singletons and the isLazy parameter was removed. All initialization is lazy now. If you want to intialize all singletons call the `initializeSingletons()` extension
+## Other Changes
+- This version drops the `meta` dependency. This means that the container no
+longer has the @immutable annotation. See the documentation about immutability.
+- Containers now have an `isScoped` flag. If this is true, all factories act like singletons. Use the `scoped()` method to create a scoped version of the container
+- The `merge()` method allows you to copy the singletons/scope from one container to another

@@ -1,6 +1,10 @@
 ## A Dart Ioc Container
+A simple IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
 
-ioc_container is a simple IoC Container for Dart and Flutter. You can use it for dependency injection or as a service locator. It has scoping and singleton support. If you've used Provider, you'll probably need an Ioc Container to compliment it. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects. The library is so small that you can just copy the [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) into Dartpad to share your code.
+
+The library is eighty one lines of [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) according to LCOV. That means you copy/paste it anywhere and it's simple enough for you to understand. 
+
+If you've used Provider, you'll probably need an Ioc Container to compliment it. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects.
 
 You can do this. It's nice.
 
@@ -18,11 +22,6 @@ var d = container.get<D>();
 expect(d.c.b.a, a);
 expect(d.c.b.a.name, 'a');
 ```
-
-## Performance Comparison Benchmarks
-This library is fast and holds up to comparable libraries in terms of performance. Check out the benchmarks folder of the GitHub repository to check out the benchmarks. 
-
-_*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. Invite you and the library authors to check these and let me know if there are mistakes.*_
 
 ## Scoping
 You can create a scoped container that will never create more than one instance of an object by type within the scope. You can check this example out in the tests. In this example, we create an instance of `D` but the object graph only has four object references. All instances of `A`, `B`, `C`, and `D` are the same instance. This is because the scoped container is only creating one instance of each type. When you are finished with the scoped instances, you can call `dispose()` to dispose everything.
@@ -77,6 +76,27 @@ _Warning: you must put error handling inside singleton or scoped `async` factori
     expect(b.a, isA<A>());
   });
 ```
+
+## Performance Comparison Benchmarks
+This library is fast and holds up to comparable libraries in terms of performance. Check out the [benchmarks folder](https://github.com/MelbourneDeveloper/ioc_container/tree/benchmarks/benchmarks) of the GitHub repository to check out the benchmarks. 
+
+_*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. I invite you and the library authors to check these and let me know if there are mistakes.*_
+
+macOS - Mac Mini - 3.2 Ghz 6 Core Intel Core i7
+
+Times in microseconds (μs)
+
+|                  	| ioc_container         	| get_it                	| flutter_simple_DI     	| Riverpod             	|   	|
+|------------------	|-----------------------	|-----------------------	|-----------------------	|----------------------	|---	|
+| Get              	| 1.152956           	    | 1.6829909085045458 	    | 23.56929286888922  	    |                      	|   	|
+| Get Async        	| 14.607701157643634 	    | 8.161859669070166  	    |                       	|                      	|   	|
+| Get Scoped       	| 2.718096281903718  	    |                       	|                       	| 7.804826666666667 	  |   	|
+| Register and Get 	| 3.6589533333333333 	    | 13.37688998488012  	    | 26.387617939769935 	    |                      	|   	|
+
+- get_it: 7.2.0
+- ioc_container: 1.0.0
+- Riverpod: 2.0.2
+- flutter_simple_dependency_injection: 2.0.0
 
 ## As a Service Locator
 You can use an `IocContainer` as a service locator in Flutter and Dart. Just put an instance in a global space and use it to get your dependencies anywhere with scoping. 

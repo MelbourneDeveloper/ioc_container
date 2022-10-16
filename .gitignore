@@ -5,8 +5,6 @@
 # Conventional directory for build output.
 build/
 
-pubspec.lock
-
 coverage/
 
 example/.DS_Store

@@ -35,6 +35,7 @@ This version focuses on async initalization. New methods `addAsync()` and `addSi
 ## Performance enhancement
 There is a big improvement on the `get()` method. This version brings a set of benchmarks that measure performance against similar libraries. Check the benchmarks folder.
 ## Breaking Changes 
+- `init()` renamed to `getAsync()`. The feedback was that init was a bad name
 - The `dispose()` method now returns a future. If you need to dispose services and wait for the result, you must `await` this call
 - `toContainer()` no longer initializes all singletons and the isLazy parameter was removed. All initialization is lazy now. If you want to intialize all singletons call the `initializeSingletons()` extension
 ## Other Changes

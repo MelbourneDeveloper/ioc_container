@@ -729,4 +729,19 @@ void main() {
       throwsUnsupportedError,
     );
   });
+
+  test('Test async and sync dispose Throws Exception', () {
+    expect(
+      () => ServiceDefinition<String>(
+        (c) => '',
+        dispose: (s)
+            //ignore: no-empty-block
+            {},
+        disposeAsync: (s) async
+            //ignore: no-empty-block
+            {},
+      ),
+      throwsA(isA<Error>()),
+    );
+  });
 }

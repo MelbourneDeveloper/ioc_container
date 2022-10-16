@@ -17,9 +17,13 @@ class ServiceDefinition<T> {
     this.isSingleton = false,
     this.dispose,
     this.disposeAsync,
-  }) : assert(
+  })  : assert(
           !isSingleton || dispose == null,
           'Singleton factories cannot have a dispose method',
+        ),
+        assert(
+          dispose == null || disposeAsync == null,
+          "Service definitions can't have both dispose and disposeAsync",
         );
 
   ///If true, only one instance of the service will be created and shared for
@@ -38,20 +42,9 @@ class ServiceDefinition<T> {
   ///The async dispose method that is called when you dispose the scope
   final Future<void> Function(T service)? disposeAsync;
 
-  void _dispose(T instance) {
-    dispose?.call(instance);
-  }
+  void _dispose(T instance) => dispose?.call(instance);
 
-  Future<void> _disposeAsync(T instance) async {
-    if (dispose != null) {
-      dispose!(instance);
-
-      return;
-    }
-    if (disposeAsync != null) {
-      return disposeAsync!.call(instance);
-    }
-  }
+  Future<void> _disposeAsync(T instance) async => disposeAsync?.call(instance);
 }
 
 ///A built Ioc Container. To create a new IocContainer, use
@@ -188,62 +181,32 @@ class IocContainerBuilder {
       IocContainer container,
     )
         factory, {
-    void Function(T service)? dispose,
+    Future<void> Function(T service)? disposeAsync,
   }) =>
-      add<Future<T>>(
-        factory,
-        dispose: (future) async {
-          final value = await future;
-          dispose?.call(value);
-        },
+      addServiceDefinition<Future<T>>(
+        ServiceDefinition<Future<T>>(
+          (container) => factory(container),
+          disposeAsync: (service) async => disposeAsync?.call(await service),
+        ),
       );
 }
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
-  ///Dispose all singletons or scope.
-  ///Warning: don't use this on your root container. You should only use this
-  ///on scoped containers.
-  ///Warning: Prefer [disposeAsync] for async definitions.
-  ///This call does not await futures so don't set
-  ///disposeAsyncSingletons to true if you need to await async disposal
-  void dispose({bool disposeAsyncSingletons = false}) {
+  ///Dispose all singletons or scope. Warning: don't use this on your root
+  ///container. You should only use this on scoped containers.
+  Future<void> dispose() async {
     assert(isScoped, 'Only dispose scoped containers');
     for (final type in singletons.keys) {
       //Note: we don't need to check if the service is a singleton because
       //singleton service definitions never have dispose
       final serviceDefinition = serviceDefinitionsByType[type]!;
-      if (serviceDefinition.dispose != null) {
-        serviceDefinition._dispose(singletons[type]);
-        continue;
-      }
 
-      if (disposeAsyncSingletons && serviceDefinition.disposeAsync != null) {
-        // ignore: discarded_futures
-        serviceDefinition._disposeAsync(singletons[type]);
-        continue;
-      }
-    }
-    singletons.clear();
-  }
+      //We can't do a null check here because if a Dart issue
 
-  ///Dispose all singletons or scope and await their disposal
-  Future<void> disposeAsync({bool disposeAsyncSingletons = false}) async {
-    assert(isScoped, 'Only dispose scoped containers');
-    for (final type in singletons.keys) {
-      //Note: we don't need to check if the service is a singleton because
-      //singleton service definitions never have dispose
-      final serviceDefinition = serviceDefinitionsByType[type]!;
-      if (serviceDefinition.dispose != null) {
-        serviceDefinition._dispose(singletons[type]);
-        continue;
-      }
+      serviceDefinition._dispose.call(singletons[type]);
 
-      if (disposeAsyncSingletons && serviceDefinition.disposeAsync != null) {
-        // ignore: discarded_futures
-        await serviceDefinition._disposeAsync(singletons[type]);
-        continue;
-      }
+      await serviceDefinition._disposeAsync(singletons[type]);
     }
     singletons.clear();
   }

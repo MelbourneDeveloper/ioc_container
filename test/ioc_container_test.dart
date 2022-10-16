@@ -148,7 +148,7 @@ void main() {
     expect(identical(d.c.b, d.b), true);
   });
 
-  test('With Scoping And Disposing', () {
+  test('With Scoping And Disposing', () async {
     final a = A('a');
     final builder = IocContainerBuilder()
       ..addSingletonService(a)
@@ -164,7 +164,13 @@ void main() {
     final container = builder.toContainer();
     final scoped = container.scoped();
     final d = scoped.get<D>();
-    scoped.dispose();
+    //BREAKING CHANGE
+    //This used to work without await, but now it's async
+    await scoped.dispose();
+
+    //This also works if we don't use await above
+    //await Future<void>.delayed(const Duration(milliseconds: 100));
+
     expect(d.disposed, true);
     expect(d.c.disposed, true);
     expect(container<D>().disposed, false);
@@ -383,12 +389,12 @@ void main() {
           const Duration(milliseconds: 10),
           () async => C(await c.getAsync<B>()),
         ),
-        dispose: (c) => c.dispose(),
+        disposeAsync: (c) async => c.dispose(),
       );
 
     final scope = builder.toContainer().scoped();
     final c = await scope.getAsync<C>();
-    await scope.disposeAsync();
+    await scope.dispose();
     expect(c.disposed, true);
   });
 

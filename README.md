@@ -1,10 +1,18 @@
-## A Dart Ioc Container
-A simple IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
+# A Dart Ioc Container
+A simple, fast IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
 
+# Why Use This Library
+Dependency management can be difficult. Global factories get much more complicated when you need to manage the lifecycle of your services or replace services for testing. 
 
-The library is eighty one lines of [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) according to LCOV. That means you copy/paste it anywhere and it's simple enough for you to understand. 
+- Easily replace services with mocks for testing
+- Configure the lifecycle of your services for singleton (one per app) or transient (always fresh)
+- Access factories for other services from any factory
+- Perform async initialization work inside the factories
+- Create a scope for a set of services that can be disposed of together
 
-If you've used Provider, you'll probably need an Ioc Container to compliment it. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects.
+This library is fast and holds up to comparable libraries in terms of performance. See benchmark comparisons below. It has eighty-one lines of [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) according to LCOV. That means you copy/paste it anywhere and it's simple enough for you to understand and change if you find an issue.
+
+It's a perfect complement to Provider or InheritedWidgets in Flutter. Provider and `InheritedWidgets` are good at passing dependencies through the widget tree, but Ioc Container is good at minting them in the first place. Return `get<>()` from your container to Provider's `create` builder method. Whenever Provider needs a dependency the Ioc Container will either create a new instance or grab one of the singletons/scoped objects.
 
 You can do this. It's nice.
 
@@ -78,7 +86,7 @@ _Warning: you must put error handling inside singleton or scoped `async` factori
 ```
 
 ## Performance Comparison Benchmarks
-This library is fast and holds up to comparable libraries in terms of performance. Check out the [benchmarks folder](https://github.com/MelbourneDeveloper/ioc_container/tree/benchmarks/benchmarks) of the GitHub repository to check out the benchmarks. 
+Check out the [benchmarks folder](https://github.com/MelbourneDeveloper/ioc_container/tree/benchmarks/benchmarks) of the GitHub repository to check out the benchmarks. 
 
 _*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. I invite you and the library authors to check these and let me know if there are mistakes.*_
 

@@ -2,7 +2,7 @@
 A simple, fast IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
 
 # Why Use This Library
-Dependency management can be difficult. Global factories get much more complicated when you need to manage the lifecycle of your services or replace services for testing. 
+Dependency management can be difficult. Global factories get much more complicated when you need to manage the lifecycle of your services or replace services for testing. This library takes inspiration from [dependency injection in ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like `IServiceCollection` in ASP.NET Core and then you build it with the `toContainer()` method which is like the `BuildServiceProvider()` method in ASP.NET Core. This is an established pattern that the whole .NET ecosystem depends on. Dependency injection allows your code to
 
 - Easily replace services with mocks for testing
 - Configure the lifecycle of your services for singleton (one per app) or transient (always fresh)

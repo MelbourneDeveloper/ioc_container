@@ -19,7 +19,7 @@ expect(d.c.b.a, a);
 expect(d.c.b.a.name, 'a');
 ```
 
-## Comparison Benchmarks
+## Performance Comparison Benchmarks
 This library is fast and holds up to comparable libraries in terms of performance. Check out the benchmarks folder of the GitHub repository to check out the benchmarks. 
 
 _*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. Invite you and the library authors to check these and let me know if there are mistakes.*_

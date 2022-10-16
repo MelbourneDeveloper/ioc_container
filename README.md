@@ -1,4 +1,4 @@
-# A Dart Ioc Container
+# Dart and Flutter Ioc Container
 A simple, fast IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
 
 # Why Use This Library
@@ -75,6 +75,52 @@ final builder = IocContainerBuilder()
 
 final container = builder.toContainer();
 final b = await container.getAsync<B>();
+```
+
+## Testing
+Check out the sample app on the example tab. This is a simple Counter example. There is a widget test in the test folder. It gives you an example of substituting a Mock/Fake for a real service. If you use dependency injection in your app, you can write widget tests like this. Compose your object graph like this:
+
+```dart
+IocContainerBuilder compose({bool allowOverrides = false}) =>
+    IocContainerBuilder(allowOverrides: allowOverrides)
+      ..addSingleton<AppChangeNotifier>(
+        (container) => AppChangeNotifier(),
+      );
+
+void main() {
+  runApp(
+    MyApp(
+      container: compose().toContainer(),
+    ),
+  );
+}
+```
+
+And then override services with fakes/mocks like this
+
+```dart
+testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  final builder = compose(allowOverrides: true)
+    ..addSingleton<AppChangeNotifier>((container) => FakeAppChangeNotifier());
+
+  // Build our app and trigger a frame.
+  await tester.pumpWidget(MyApp(
+    container: builder.toContainer(),
+  ));
+
+  // Verify that our counter starts at 0.
+  expect(find.text('0'), findsOneWidget);
+  expect(find.text('1'), findsNothing);
+
+  // Tap the '+' icon and trigger a frame.
+  await tester.tap(find.byIcon(Icons.add));
+  await tester.pump();
+
+  // Verify that our counter has incremented.
+  expect(find.text('0'), findsNothing);
+  expect(find.text('1'), findsOneWidget);
+});
+}
 ```
 
 ## Performance Comparison Benchmarks

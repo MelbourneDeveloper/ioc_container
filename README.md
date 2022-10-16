@@ -19,6 +19,11 @@ expect(d.c.b.a, a);
 expect(d.c.b.a.name, 'a');
 ```
 
+## Comparison Benchmarks
+This library is fast and holds up to comparable libraries in terms of performance. Check out the benchmarks folder of the GitHub repository to check out the benchmarks. 
+
+_*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. Invite you and the library authors to check these and let me know if there are mistakes.*_
+
 ## Scoping
 You can create a scoped container that will never create more than one instance of an object by type within the scope. You can check this example out in the tests. In this example, we create an instance of `D` but the object graph only has four object references. All instances of `A`, `B`, `C`, and `D` are the same instance. This is because the scoped container is only creating one instance of each type. When you are finished with the scoped instances, you can call `dispose()` to dispose everything.
 

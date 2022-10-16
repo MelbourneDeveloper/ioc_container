@@ -101,8 +101,6 @@ Times in microseconds (μs)
 ## As a Service Locator
 You can use an `IocContainer` as a service locator in Flutter and Dart. Just put an instance in a global space and use it to get your dependencies anywhere with scoping. 
 
-_Note: there are many ways to avoid declaring the container globally. You should weigh up your options and make sure that declaring the container globally is the right choice for your app_. 
-
 ```dart
 late final IocContainer container;
 
@@ -119,6 +117,3 @@ void main(List<String> arguments) {
   print('Hello world: ${d.c.b.a.name}');
 }
 ```
-
-Install it like this:
-> dart pub add ioc_container

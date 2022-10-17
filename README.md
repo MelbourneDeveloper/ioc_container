@@ -141,7 +141,7 @@ testWidgets('Counter increments smoke test', (WidgetTester tester) async {
 ```
 
 ## Performance Comparison Benchmarks
-Check out the [benchmarks folder](https://github.com/MelbourneDeveloper/ioc_container/tree/benchmarks/benchmarks) of the GitHub repository to check out the benchmarks. 
+Check out the [benchmarks folder](/benchmarks) of the GitHub repository to check out the benchmarks. 
 
 _*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. I invite you and the library authors to check these and let me know if there are any mistakes*_
 

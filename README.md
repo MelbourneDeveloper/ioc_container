@@ -95,7 +95,7 @@ final b = await container.getAsync<B>();
 ```
 
 ## Testing
-Check out the sample app on the example tab. It is a simple Counter example, and there is widget test in the `test` folder. It gives you an example of substituting a Mock/Fake for a real service. If you use dependency injection in your app, you can write widget tests like this. Compose your object graph like this:
+Check out the sample app on the example tab. It is a simple Flutter Counter example, and there is widget test in the `test` folder. It gives you an example of substituting a Mock/Fake for a real service. If you use dependency injection in your app, you can write widget tests like this. Compose your object graph like this:
 
 ```dart
 IocContainerBuilder compose({bool allowOverrides = false}) =>

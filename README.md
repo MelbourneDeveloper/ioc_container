@@ -168,7 +168,7 @@ Windows 10 - AMD Ryzen 9 3900X 12-Core Processor, 3793 Mhz, 12 Core(s), 24 Logic
 | Get Scoped Async  | 20.81655432998111  	    |                       	|                       	| 89.69145771355716 	  |
 | Register and Get 	| 3.7713381714963714 	    | 15.033727718935676  	  | 30.542997285013573 	    |                      	|
 
-
+- ioc_container: 1.0.0
 - get_it: 7.2.0
 - ioc_container: 1.0.0
 - Riverpod: 2.0.2

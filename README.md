@@ -2,15 +2,15 @@
 A simple, fast IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
 
 ### Contents
-[Why Use This Library](/#Why-Use-This-Library)
+[Why Use This Library](#why-use-this-library)
 
-[Scoping](/#scoping)
+[Scoping](#scoping)
 
-[Async Initialization](/#Async-Initialization)
+[Async Initialization](#async-initialization)
 
-[Testing](/#Testing)
+[Testing](#testing)
 
-[Performance Comparison Benchmarks](/#Performance Comparison Benchmarks)
+[Performance Comparison Benchmarks](#performance-comparison-benchmarks)
 
 
 # Why Use This Library

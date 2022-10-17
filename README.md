@@ -4,7 +4,7 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 ### Contents
 [Dependency Injection](#dependency-injection)
 
-[Why Use This Library](#why-use-this-library)
+[Why Use This Library?](#why-use-this-library)
 
 [Scoping](#scoping)
 
@@ -19,7 +19,7 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 ## Dependency Injection (DI)
 DI allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes, and it allows you to easily swap out implementations without having to change your code. This library takes inspiration from Dependency Injection in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0) and .NET MAUI. You register your dependencies with the `IocContainerBuilder` which is a bit like `IServiceCollection` in ASP.NET Core and then you build it with the `toContainer()` method which is like the `BuildServiceProvider()` method in ASP.NET Core. DI is an established pattern that the whole .NET ecosystem depends on.
 
-## Why Use This Library
+## Why Use This Library?
 You can
 - Easily replace services with mocks for testing
 - Configure the lifecycle of your services for singleton (one per app) or transient (always fresh)

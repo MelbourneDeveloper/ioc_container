@@ -175,21 +175,20 @@ Windows 10 - AMD Ryzen 9 3900X 12-Core Processor, 3793 Mhz, 12 Core(s), 24 Logic
 - flutter_simple_dependency_injection: 2.0.0
 
 ## As a Service Locator
-You can use an `IocContainer` as a service locator in Flutter and Dart. Just put an instance in a global space and use it to get your dependencies anywhere with scoping. 
+You can use an `IocContainer` as a service locator in Flutter and Dart. A service locator is basically just an IoC Container that you can access globally. Just put an instance in a global location and use it to get your dependencies anywhere with scoping. 
 
 ```dart
+///This container is final and can be used anywhere...
 late final IocContainer container;
 
 void main(List<String> arguments) {
   final builder = IocContainerBuilder()
     ..addSingletonService(A('A nice instance of A'))
-    ..add((i) => B(i.get<A>()))
-    ..add((i) => C(i.get<B>()))
-    ..add((i) => D(i.get<B>(), i.get<C>()));
+    ..add((i) => B(i<A>()))
+    ..add((i) => C(i<B>()))
+    ..add((i) => D(i<B>(), i<C>()));
   container = builder.toContainer();
-
-  final d = container.scoped().get<D>();
-  // ignore: avoid_print
+  final d = container.scoped()<D>();
   print('Hello world: ${d.c.b.a.name}');
 }
 ```

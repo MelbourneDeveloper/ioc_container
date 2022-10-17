@@ -145,9 +145,10 @@ Check out the [benchmarks folder](https://github.com/MelbourneDeveloper/ioc_cont
 
 _*Disclaimer: there is no claim that the methodology in these benchmarks is correct. It's possible that my benchmarks don't compare the same thing across libraries. I invite you and the library authors to check these and let me know if there are any mistakes*_
 
-macOS - Mac Mini - 3.2 Ghz 6 Core Intel Core i7
 
 Times in microseconds (μs)
+
+macOS - Mac Mini - 3.2 Ghz 6 Core Intel Core i7
 
 |                  	| ioc_container         	| get_it                	| flutter_simple_DI     	| Riverpod             	|   	|
 |------------------	|-----------------------	|-----------------------	|-----------------------	|----------------------	|---	|
@@ -155,6 +156,18 @@ Times in microseconds (μs)
 | Get Async        	| 14.607701157643634 	    | 8.161859669070166  	    |                       	|                      	|   	|
 | Get Scoped       	| 2.718096281903718  	    |                       	|                       	| 7.804826666666667 	  |   	|
 | Register and Get 	| 3.6589533333333333 	    | 13.37688998488012  	    | 26.387617939769935 	    |                      	|   	|
+
+
+Windows 10 - AMD Ryzen 9 3900X 12-Core Processor, 3793 Mhz, 12 Core(s), 24 Logical Processor(s)
+
+|                  	| ioc_container         	| get_it                	| flutter_simple_DI     	| Riverpod             	|   	|
+|------------------	|-----------------------	|-----------------------	|-----------------------	|----------------------	|---	|
+| Get              	| 1.1175335           	  | 1.5489277255361373 	    | 28.234064595612427  	  |                      	|   	|
+| Get Async        	| 16.87476954663538 	    | 8.672696413651794  	    |                       	|                      	|   	|
+| Get Scoped       	| 2.630455  	            |                         |                       	| 8.149182729222566 	  |   	|
+| Get Scoped Async  | 20.81655432998111  	    |                       	|                       	| 89.69145771355716 	  |   	|
+| Register and Get 	| 3.7713381714963714 	    | 15.033727718935676  	  | 30.542997285013573 	    |                      	|   	|
+
 
 - get_it: 7.2.0
 - ioc_container: 1.0.0

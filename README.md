@@ -12,8 +12,6 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 [Testing](#testing)
 
-[Performance Comparison Benchmarks](#performance-comparison-benchmarks)
-
 [As a Service Locator](#as-a-service-locator)
 
 ## Dependency Injection (DI)

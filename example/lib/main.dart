@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:retry/retry.dart';
 import 'package:ioc_container/ioc_container.dart';
 
 class AppChangeNotifier extends ChangeNotifier {
+  AppChangeNotifier(this.flakyService);
+
+  final FlakyService flakyService;
   int counter = 0;
 
   void increment() {
@@ -11,14 +14,37 @@ class AppChangeNotifier extends ChangeNotifier {
   }
 }
 
+class FlakyService {
+  static int retryCount = 0;
+}
+
 ///This is the composition root. This is where we compose or "wire up" our dependencies.
 IocContainerBuilder compose({bool allowOverrides = false}) =>
     IocContainerBuilder(allowOverrides: allowOverrides)
-      ..addSingletonAsync<AppChangeNotifier>((container) => Future.delayed(
-            //This Future pauses for 2 seconds
-            const Duration(seconds: 2),
-            () => AppChangeNotifier(),
-          ));
+      ..addSingletonAsync<AppChangeNotifier>(
+        (container) => Future.delayed(
+          //This Future pauses for 2 seconds
+          const Duration(milliseconds: 50),
+          () async => AppChangeNotifier(
+            //Add resiliency by retrying the initialization of the FlakyService until it succeeds
+            await retry(
+              delayFactor: const Duration(milliseconds: 50),
+              () async => container.getAsyncSafe<FlakyService>(),
+            ),
+          ),
+        ),
+      )
+      ..addSingletonAsync((container) async {
+        if (FlakyService.retryCount < 5) {
+          FlakyService.retryCount++;
+          debugPrint(
+              'FlakyService failed to initialize ${FlakyService.retryCount}x. Retrying...');
+          //This service fails to initialize the first time around
+          throw Exception();
+        }
+
+        return FlakyService();
+      });
 
 void main() {
   runApp(

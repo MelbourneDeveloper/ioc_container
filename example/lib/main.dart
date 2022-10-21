@@ -23,7 +23,6 @@ IocContainerBuilder compose({bool allowOverrides = false}) =>
     IocContainerBuilder(allowOverrides: allowOverrides)
       ..addSingletonAsync<AppChangeNotifier>(
         (container) => Future.delayed(
-          //This Future pauses for 2 seconds
           const Duration(milliseconds: 50),
           () async => AppChangeNotifier(
             //Add resiliency by retrying the initialization of the FlakyService until it succeeds

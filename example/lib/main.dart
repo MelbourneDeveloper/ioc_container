@@ -14,9 +14,11 @@ class AppChangeNotifier extends ChangeNotifier {
 ///This is the composition root. This is where we compose or "wire up" our dependencies.
 IocContainerBuilder compose({bool allowOverrides = false}) =>
     IocContainerBuilder(allowOverrides: allowOverrides)
-      ..addSingleton<AppChangeNotifier>(
-        (container) => AppChangeNotifier(),
-      );
+      ..addSingletonAsync<AppChangeNotifier>((container) => Future.delayed(
+            //This Future pauses for 2 seconds
+            const Duration(seconds: 2),
+            () => AppChangeNotifier(),
+          ));
 
 void main() {
   runApp(
@@ -41,12 +43,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: AnimatedBuilder(
-        animation: container<AppChangeNotifier>(),
-        builder: (context, bloobit) => MyHomePage(
-          title: 'Change Notifier Sample',
-          appChangeNotifier: container<AppChangeNotifier>(),
-        ),
+      //We use a FutureBuilder to wait for the Future to complete
+      home: FutureBuilder(
+        future: container.getAsync<AppChangeNotifier>(),
+        builder: (c, s) => s.data == null
+            //We display a progress indicator until the Future completes
+            ? const CircularProgressIndicator.adaptive()
+            : AnimatedBuilder(
+                animation: s.data!,
+                builder: (context, bloobit) => MyHomePage(
+                  title: 'Change Notifier Sample',
+                  appChangeNotifier: s.data!,
+                ),
+              ),
       ),
     );
   }

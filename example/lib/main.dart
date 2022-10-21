@@ -28,11 +28,7 @@ IocContainerBuilder compose({bool allowOverrides = false}) =>
         (container) => Future.delayed(
           const Duration(milliseconds: 50),
           () async => AppChangeNotifier(
-            //Add resiliency by retrying the initialization of the FlakyService until it succeeds
-            await retry(
-              delayFactor: const Duration(milliseconds: 50),
-              () async => container.getAsyncSafe<FlakyService>(),
-            ),
+            await container.getAsync<FlakyService>(),
           ),
         ),
       )
@@ -51,6 +47,7 @@ IocContainerBuilder compose({bool allowOverrides = false}) =>
 void main() {
   runApp(
     MyApp(
+      //We pass the container in to the root widget
       container: compose().toContainer(),
     ),
   );
@@ -67,20 +64,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Change Notifier Sample',
+      title: 'ioc_container Example',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      //We use a FutureBuilder to wait for the Future to complete
+      //We use a FutureBuilder to wait for the initialization to complete
       home: FutureBuilder(
-        future: container.getAsync<AppChangeNotifier>(),
+        //Add resiliency by retrying the initialization of the FlakyService until it succeeds
+        future: retry(
+            delayFactor: const Duration(milliseconds: 50),
+            //getAsyncSafe ensures we don't stored the failed initialization in the container
+            () async => container.getAsyncSafe<AppChangeNotifier>()),
         builder: (c, s) => s.data == null
             //We display a progress indicator until the Future completes
             ? const CircularProgressIndicator.adaptive()
             : AnimatedBuilder(
                 animation: s.data!,
                 builder: (context, bloobit) => MyHomePage(
-                  title: 'Change Notifier Sample',
+                  title: 'ioc_container Example',
                   appChangeNotifier: s.data!,
                 ),
               ),

@@ -16,25 +16,28 @@ class FakeAppChangeNotifier extends ChangeNotifier
 }
 
 void main() {
-testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-  final builder = compose(allowOverrides: true)
-    ..addSingleton<AppChangeNotifier>((container) => FakeAppChangeNotifier());
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    final builder = compose(allowOverrides: true)
+      ..addSingleton<AppChangeNotifier>((container) => FakeAppChangeNotifier());
 
-  // Build our app and trigger a frame.
-  await tester.pumpWidget(MyApp(
-    container: builder.toContainer(),
-  ));
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(MyApp(
+      container: builder.toContainer(),
+    ));
 
-  // Verify that our counter starts at 0.
-  expect(find.text('0'), findsOneWidget);
-  expect(find.text('1'), findsNothing);
+    //Wait for the progress indicator to disappear
+    await tester.pumpAndSettle();
 
-  // Tap the '+' icon and trigger a frame.
-  await tester.tap(find.byIcon(Icons.add));
-  await tester.pump();
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
 
-  // Verify that our counter has incremented.
-  expect(find.text('0'), findsNothing);
-  expect(find.text('1'), findsOneWidget);
-});
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
+  });
 }

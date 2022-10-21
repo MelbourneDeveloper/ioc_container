@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:retry/retry.dart';
 import 'package:ioc_container/ioc_container.dart';
 
-class AppChangeNotifier extends ChangeNotifier {
-  AppChangeNotifier(this.flakyService);
+//Note this example throws exceptions on purpose. See the notes below.
 
-  final FlakyService flakyService;
+///This is the business logic for our app and accepts a [FlakyService]
+class AppChangeNotifier extends ChangeNotifier {
+  AppChangeNotifier(this._flakyService);
+
+  final FlakyService _flakyService;
   int counter = 0;
 
   void increment() {

@@ -43,3 +43,5 @@ There is a big improvement on the `get()` method. This version brings a set of b
 longer has the @immutable annotation. See the documentation about immutability.
 - Containers now have an `isScoped` flag. If this is true, all factories act like singletons. Use the `scoped()` method to create a scoped version of the container
 - The `merge()` method allows you to copy the singletons/scope from one container to another
+## 1.0.1
+- Fix Dart formatting

@@ -275,7 +275,7 @@ extension IocContainerExtensions on IocContainer {
   ///
   ///Warning: this does not do error handling and this also allows reentrancy.
   ///If you call this more than once in parallel it will create multiple
-  ///Futures - i.e. make multiple async calls. You need to guard against this 
+  ///Futures - i.e. make multiple async calls. You need to guard against this
   ///and perform retries on failure.
   Future<T> getAsyncSafe<T>() async {
     final scope = scoped();

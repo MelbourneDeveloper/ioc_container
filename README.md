@@ -65,11 +65,9 @@ expect(d.c.disposed, true);
 ```    
 
 ## Async Initialization
-You can do initialization work when instantiating an instance of your service. Just use `addAsync()` or `addSingletonAsync()`. When you want an instance, call the `getAsync()` method instead of `get()`. 
+You can do initialization work when instantiating an instance of your service. Just use `addAsync()` or `addSingletonAsync()`. When you need an instance, call the `getAsync()` method instead of `get()`. 
 
-If you need to instantiate an async singleton that could throw an error, use `getAsyncSafe()`. This method does not store the singleton until it awaits successfully. But, it does allow reentrancy so you have to guard against calling it multiple times in parallel. 
-
-_Warning: if you get a singleton with getAsync() and the calls fails, the singleton will always return a `Future` with an error for the lifespan of the container_
+If you need to instantiate an async singleton that could throw an error, use `getAsyncSafe()`. This method does not store the singleton, or any subdependencies until it awaits successfully. But, it does allow reentrancy so you have to guard against calling it multiple times in parallel. You don't need `getAsyncSafe()` inside your factories because no failed initialization will be stored. Use `getAsyncSafe()` when you need to await an app initialization singleton outside of the factory. Use this approach with the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until initialization completes successfully.
 
 ```dart
 final builder = IocContainerBuilder()
@@ -91,6 +89,8 @@ final builder = IocContainerBuilder()
 final container = builder.toContainer();
 final b = await container.getAsync<B>();
 ```
+
+_Warning: if you get a singleton with getAsync() and the calls fails, the singleton will always return a `Future` with an error for the lifespan of the container_
 
 ## Testing
 Check out the sample app on the example tab. It is a simple Flutter Counter example, and there is widget test in the `test` folder. It gives you an example of substituting a Mock/Fake for a real service. If you use dependency injection in your app, you can write widget tests like this. Compose your object graph like this:

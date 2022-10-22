@@ -47,9 +47,10 @@ class ServiceDefinition<T> {
   Future<void> _disposeAsync(T instance) async => disposeAsync?.call(instance);
 }
 
-///A built Ioc Container. To create a new IocContainer, use
-///[IocContainerBuilder]. To get a service from the container, call [get].
-///Call scoped to get a container that mints scoped services.
+///A built Ioc Container. To create a new [IocContainer], use
+///[IocContainerBuilder]. To get a service from the container, call
+///[get], [getAsync], or [getAsyncSafe]
+///Call [scoped] to get a scoped container
 class IocContainer {
   ///Creates an IocContainer. You can build your own container by injecting
   ///service definitions and singletons here, but you should probably use
@@ -63,9 +64,8 @@ class IocContainer {
   ///The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
-  ///Map of singletons or scoped services by type. This map is probably mutable
-  ///so the container can store scope or singletons, so don't put anything in
-  ///here
+  ///Map of singletons or scoped services by type. This map is mutable
+  ///so the container can store scope or singletons
   final Map<Type, Object> singletons;
 
   ///If true, this container is a scoped container. Scoped containers never
@@ -218,7 +218,6 @@ extension IocContainerExtensions on IocContainer {
       final serviceDefinition = serviceDefinitionsByType[type]!;
 
       //We can't do a null check here because if a Dart issue
-
       serviceDefinition._dispose.call(singletons[type]);
 
       await serviceDefinition._disposeAsync(singletons[type]);
@@ -243,11 +242,11 @@ extension IocContainerExtensions on IocContainer {
 
   ///Gets a service, but each service in the object mesh will have only one
   ///instance. If you want to get multiple scoped objects, call [scoped] to
-  ///get a reusable [IocContainer] and then call [get] on that.
+  ///get a reusable [IocContainer] and then call [get] or [getAsync] on that.
   T getScoped<T extends Object>() => scoped().get<T>();
 
   ///Creates a new Ioc Container for a particular scope. Does not use existing
-  ///singletons/scope by default. Warning: if you want to use the existing singletons,
+  ///singletons/scope by default. Warning: if you use the existing singletons,
   ///calling [dispose] will dispose those singletons
   IocContainer scoped({
     bool useExistingSingletons = false,
@@ -258,10 +257,11 @@ extension IocContainerExtensions on IocContainer {
         isScoped: true,
       );
 
-  ///Gets a dependency that requires async initialization. You can only use
-  ///this on factories that return a Future<>. Warning: if the definition is
-  ///singleton/scoped and the Future fails, the factory will never return a
-  ///valid value. Use [getAsyncSafe] to ensure the container doesn't store
+  ///Gets a service that requires async initialization. Add these services with
+  ///[IocContainerBuilder.addAsync] or [IocContainerBuilder.addSingletonAsync]
+  ///You can only use this on factories that return a Future<>.
+  ///Warning: if the definition is singleton/scoped and the Future fails, the factory will never return a
+  ///valid value, so use [getAsyncSafe] to ensure the container doesn't store
   ///failed singletons
   Future<T> getAsync<T>() async => get<Future<T>>();
 
@@ -270,13 +270,13 @@ extension IocContainerExtensions on IocContainer {
   ///attempting to make the async initialization and merging the result with the
   ///current container if there is success.
   ///
+  ///You don't need call this inside a factory (in your composition). Only
+  ///call this from the outside, and handle the errors/timeouts gracefully.
+  ///
   ///Warning: this does not do error handling and this also allows reentrancy.
   ///If you call this more than once in parallel it will create multiple
-  ///Futures - i.e. make multiple async calls. You should execute this in a
-  ///queue or use a lock to prevent this, and perform retries on failure.
-  ///
-  ///Warning: Do not call this inside a factory (in your composition). Only
-  ///call this from the outside, and handle the errors/timeouts gracefully.
+  ///Futures - i.e. make multiple async calls. You need to guard against this 
+  ///and perform retries on failure.
   Future<T> getAsyncSafe<T>() async {
     final scope = scoped();
 

@@ -45,3 +45,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - The `merge()` method allows you to copy the singletons/scope from one container to another
 ## 1.0.1
 - Fix Dart formatting
+## 1.0.2
+- Firebase doco

@@ -12,10 +12,12 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 [Testing](#testing)
 
+[Add Firebase](#add-firebase)
+
 [As a Service Locator](#as-a-service-locator)
 
 ## Dependency Injection (DI)
-[Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes, allowing you to easily swap out implementations without changing your code. This library takes inspiration from DI in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like [`IServiceCollection`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection?view=dotnet-plat-ext-7.0) in ASP.NET Core. Then you build it with the `toContainer()` method, which is like the [`BuildServiceProvider()`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectioncontainerbuilderextensions.buildserviceprovider?view=dotnet-plat-ext-6.0) method in ASP.NET Core. DI is an established pattern that the whole .NET ecosystem, and many other ecosystems depend on.
+[Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes, allowing you to easily swap out implementations without changing your code. This library takes inspiration from DI in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like [`IServiceCollection`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection?view=dotnet-plat-ext-7.0) in ASP.NET Core. Then you build it with the `toContainer()` method, which is like the [`BuildServiceProvider()`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectioncontainerbuilderextensions.buildserviceprovider?view=dotnet-plat-ext-6.0) method in ASP.NET Core. DI is an established pattern on which the whole .NET ecosystem and many other ecosystems depend.
 
 ## Why Use This Library?
 You can
@@ -136,6 +138,108 @@ testWidgets('Counter increments smoke test', (WidgetTester tester) async {
   expect(find.text('0'), findsNothing);
   expect(find.text('1'), findsOneWidget);
 });
+}
+```
+
+## Add Firebase
+ioc_container makes accessing, initializing, and testing Firebase easy. 
+
+### Add these 
+dependencies:
+- ioc_container
+- firebase_core
+- firebase_auth
+- firebase_messaging
+- cloud_firestore
+
+dev dependencies (for testing):
+- firebase_auth_mocks
+- fake_cloud_firestore
+
+### Extension Method
+Add this file
+
+```Dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:ioc_container/ioc_container.dart';
+
+///Extensions for wiring up FlutterFire
+extension FlutterFireExtensions on IocContainerBuilder {
+  void addFirebase() {
+    //These factories are all async because we need to ensure that Firebase is initialized
+    addSingletonAsync(
+      (container) {
+        WidgetsFlutterBinding.ensureInitialized();
+
+        return Firebase.initializeApp(
+          options: container.get<FirebaseOptions>(),
+        );
+      },
+    );
+    addSingletonAsync(
+      (container) async => FirebaseAuth.instanceFor(
+        app: await container.getAsync<FirebaseApp>(),
+      ),
+    );
+    addSingletonAsync(
+      (container) async => FirebaseFirestore.instanceFor(
+        app: await container.getAsync<FirebaseApp>(),
+      ),
+    );
+    addSingletonAsync((container) async {
+      //Ensure we have already initialized Firebase
+      await container.getAsync<FirebaseApp>();
+
+      return FirebaseMessaging.instance;
+    });
+  }
+}
+```
+
+Call `addFirebase()` on your builder to add the factories to your composition:
+
+```dart
+IocContainerBuilder compose() =>
+    IocContainerBuilder(allowOverrides: true)..addFirebase();
+```
+
+You can now get any Firebase dependencies from the container like this and be sure that it is initialized.
+
+```dart
+final firebaseFirestore = await container.getAsync<FirebaseFirestore>();
+```
+
+Replace the dependencies with fakes or mocks in your tests like this.
+
+```dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:ioc_container_firebase/main.dart';
+
+void main() {
+  testWidgets('Testing with Firebase', (WidgetTester tester) async {
+    final builder = compose();
+
+    var fakeFirebaseFirestore = FakeFirebaseFirestore();
+
+    //TODO: Put fake data in fakeFirebaseFirestore here. The app will consume it.
+
+    builder
+      ..addSingletonAsync<FirebaseAuth>((container) async => MockFirebaseAuth())
+      ..addSingletonAsync<FirebaseFirestore>(
+          (container) async => fakeFirebaseFirestore);
+
+    await tester.pumpWidget(MyApp(container: builder.toContainer()));
+
+    //TODO: Put your tests here
+  });
 }
 ```
 

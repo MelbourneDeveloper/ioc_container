@@ -49,3 +49,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Firebase doco
 ## 1.0.3
 - Firebase doco
+## 1.0.4
+- Firebase doco

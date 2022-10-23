@@ -200,11 +200,18 @@ extension FlutterFireExtensions on IocContainerBuilder {
 }
 ```
 
-Call `addFirebase()` on your builder to add the factories to your composition:
+Call `addFirebase()` on your builder to add the factories to your composition and add your `FirebaseOptions`.
 
 ```dart
-IocContainerBuilder compose() =>
-    IocContainerBuilder(allowOverrides: true)..addFirebase();
+IocContainerBuilder compose() => IocContainerBuilder(allowOverrides: true)
+  ..addFirebase()
+  //You must add your own FirebaseOptions to the composition
+  ..addSingleton<FirebaseOptions>((container) => MyFirebaseOptions(
+        apiKey: apiKey,
+        appId: appId,
+        messagingSenderId: messagingSenderId2,
+        projectId: projectId,
+      ));
 ```
 
 You can now get any Firebase dependencies from the container like this and be sure that it is initialized.

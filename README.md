@@ -217,7 +217,7 @@ IocContainerBuilder compose() => IocContainerBuilder(allowOverrides: true)
 You can now get any Firebase dependencies from the container like this and be sure that it is initialized.
 
 ```dart
-final firebaseFirestore = await container.getAsync<FirebaseFirestore>();
+final firebaseFirestore = await container.getAsyncSafe<FirebaseFirestore>();
 ```
 
 ### Testing

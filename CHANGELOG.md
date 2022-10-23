@@ -47,3 +47,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Fix Dart formatting
 ## 1.0.2
 - Firebase doco
+## 1.0.3
+- Firebase doco

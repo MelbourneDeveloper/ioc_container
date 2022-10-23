@@ -213,6 +213,7 @@ You can now get any Firebase dependencies from the container like this and be su
 final firebaseFirestore = await container.getAsync<FirebaseFirestore>();
 ```
 
+### Testing
 Replace the dependencies with fakes or mocks in your tests like this.
 
 ```dart
@@ -242,6 +243,8 @@ void main() {
   });
 }
 ```
+
+If you have any further issues, see the [FlutterFire documentation](https://firebase.flutter.dev/docs/overview/).
 
 ## As a Service Locator
 You can use an `IocContainer` as a service locator in Flutter and Dart. A service locator is basically just an IoC Container that you can access globally. Just declare an instance in a global location to get your dependencies anywhere with scoping. 

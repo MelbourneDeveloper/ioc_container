@@ -70,7 +70,9 @@ expect(d.c.disposed, true);
 ## Async Initialization
 You can do initialization work when instantiating an instance of your service. Just use `addAsync()` or `addSingletonAsync()`. When you need an instance, call the `getAsync()` method instead of `get()`. 
 
-If you need to instantiate an async singleton that could throw an error, use `getAsyncSafe()`. This method does not store the singleton or any sub-dependencies until it awaits successfully. But it does allow reentrancy, so you must guard against calling it multiple times in parallel. You don't need `getAsyncSafe()` inside your factories because no failed initialization will be stored. Use `getAsyncSafe()` when you need to await an app initialization singleton outside of the factory. Use this approach with the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
+If you need to instantiate an async singleton that could throw an error, you can use `getAsyncSafe()`. This method does not store the singleton or any sub-dependencies until it awaits successfully. But it does allow reentrancy, so you must guard against calling it multiple times in parallel. Be aware that this may happen even if you only call this method in a single location in your app. You may need a an async lock.
+
+Use this approach with the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
 
 ```dart
 final builder = IocContainerBuilder()
@@ -217,7 +219,7 @@ IocContainerBuilder compose() => IocContainerBuilder(allowOverrides: true)
 You can now get any Firebase dependencies from the container like this and be sure that it is initialized.
 
 ```dart
-final firebaseFirestore = await container.getAsyncSafe<FirebaseFirestore>();
+final firebaseFirestore = await container.getAsync<FirebaseFirestore>();
 ```
 
 ### Testing

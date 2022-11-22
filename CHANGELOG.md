@@ -53,3 +53,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Firebase doco
 ## 1.0.5
 - Firebase doco
+## 1.0.6
+- More explicit wording around `getAsyncSafe()`

@@ -266,17 +266,16 @@ extension IocContainerExtensions on IocContainer {
   Future<T> getAsync<T>() async => get<Future<T>>();
 
   ///See [getAsync].
-  ///Safely makes an async call by creating a temporary scoped container,
+  ///Makes an async call by creating a temporary scoped container,
   ///attempting to make the async initialization and merging the result with the
   ///current container if there is success.
   ///
-  ///You don't need call this inside a factory (in your composition). Only
-  ///call this from the outside, and handle the errors/timeouts gracefully.
-  ///
-  ///Warning: this does not do error handling and this also allows reentrancy.
+  ///Warning: allows reentrancy and does not do error handling.
   ///If you call this more than once in parallel it will create multiple
   ///Futures - i.e. make multiple async calls. You need to guard against this
-  ///and perform retries on failure.
+  ///and perform retries on failure. Be aware that this may happen even if 
+  ///you only call this method in a single location in your app. 
+  ///You may need a an async lock.
   Future<T> getAsyncSafe<T>() async {
     final scope = scoped();
 

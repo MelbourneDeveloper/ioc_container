@@ -51,64 +51,73 @@ ${registrations.map(
 ''';
 
 class GeneratorStub extends Generator {
-  const GeneratorStub({this.forClasses = true, this.forLibrary = false});
-  final bool forClasses, forLibrary;
+  const GeneratorStub();
 
   @override
-  Future<String> generate(LibraryReader library, BuildStep buildStep) async {
+  Future<String> generate(
+    LibraryReader library,
+    BuildStep buildStep,
+  ) async {
     final output = <String>[];
 
-    if (forClasses) {
-      final annotatedClasses = library.allElements
-          .whereType<ClassElement>()
-          .where(
-            (element) =>
-                element.children.any((element) => element.metadata.isNotEmpty),
-          )
-          .where(
-            (element) => element.children.any(
-              (element) => element.metadata
-                  .any((e) => e.element?.displayName == 'FactoryDefinition'),
-            ),
-          )
-          .toList();
+    final annotatedClasses = library.allElements
+        .whereType<ClassElement>()
+        .where(
+          (element) =>
+              element.children.any((element) => element.metadata.isNotEmpty),
+        )
+        .where(
+          (element) => element.children.any(
+            (element) => element.metadata
+                .any((e) => e.element?.displayName == 'FactoryDefinition'),
+          ),
+        )
+        .toList();
 
-      if (annotatedClasses.isNotEmpty) {
-        output
-          ..add("import '${annotatedClasses[0].location!.components[0]}';")
-          ..add(
-            code(
-              annotatedClasses.map(
-                (classElement) {
-                  // ignore: unused_local_variable
-                  final factoryElement = classElement.children.firstWhere(
-                    (element) => element.metadata.any(
+    // ignore: unused_local_variable
+    final annotatedFunctions = library.allElements
+        .whereType<FunctionElement>()
+        .where(
+          (element) => element.metadata
+              .any((e) => e.element?.displayName == 'FactoryDefinition'),
+        )
+        .toList();
+
+    if (annotatedClasses.isNotEmpty) {
+      output
+        ..add("import '${annotatedClasses[0].location!.components[0]}';")
+        ..add(
+          code(
+            annotatedClasses.map(
+              (classElement) {
+                // ignore: unused_local_variable
+                final factoryElement = classElement.children.firstWhere(
+                  (element) => element.metadata.any(
+                    (e) => e.element?.displayName == 'FactoryDefinition',
+                  ),
+                );
+
+                // ignore: unused_local_variable
+                final factoryDefinitionElement = factoryElement.metadata
+                    .firstWhere(
                       (e) => e.element?.displayName == 'FactoryDefinition',
-                    ),
-                  );
+                    )
+                    .element!;
 
-                  // ignore: unused_local_variable
-                  final factoryDefinitionElement = factoryElement.metadata
-                      .firstWhere(
-                        (e) => e.element?.displayName == 'FactoryDefinition',
-                      )
-                      .element!;
-
-                  return Registration(
-                    classElement.displayName.replaceFirst(
-                      classElement.displayName[0],
-                      classElement.displayName[0].toLowerCase(),
-                    ),
-                    classElement.displayName,
-                    false,
-                    factoryElement.displayName,
-                    true,
-                  );
-                },
-              ).toList(),
-            ),
-          );
-      }
+                return Registration(
+                  classElement.displayName.replaceFirst(
+                    classElement.displayName[0],
+                    classElement.displayName[0].toLowerCase(),
+                  ),
+                  classElement.displayName,
+                  false,
+                  factoryElement.displayName,
+                  true,
+                );
+              },
+            ).toList(),
+          ),
+        );
     }
 
     return output.join('\n');

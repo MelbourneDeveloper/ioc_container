@@ -4,7 +4,8 @@ library example;
 
 import 'package:ioc_container/ioc_container.dart';
 
-//Example newExample(IocContainer container) => const Example();
+@FactoryDefinition(isSingleton: false)
+Example newExample(IocContainer container) => const Example();
 
 class FactoryDefinition {
   const FactoryDefinition({required this.isSingleton});
@@ -16,7 +17,7 @@ class FactoryDefinition {
 class Example {
   const Example();
 
-  @FactoryDefinition(isSingleton: false)
+  //@FactoryDefinition(isSingleton: false)
   factory Example.fromContainer(IocContainer container) => const Example();
 
   // @FactoryDefinition(isSingleton: false)

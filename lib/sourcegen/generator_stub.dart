@@ -9,11 +9,15 @@ class Registration {
     this.name,
     this.typeName,
     this.isAsync,
+    this.factoryName,
+    this.isSingleton,
   );
 
   final String name;
   final String typeName;
   final bool isAsync;
+  final String factoryName;
+  final bool isSingleton;
 }
 
 String code(List<Registration> registrations) => '''
@@ -33,6 +37,17 @@ ${registrations.map((e) => 'final ServiceDefinition<${e.typeName}> ${e.name}Defi
 
 ${registrations.map((e) => '${e.typeName} get ${e.name} => container<${e.typeName}>();').join('\r\n')}
 }
+
+NamedContainer compose() => NamedContainer(
+${registrations.map(
+          (e) => '''
+      const ServiceDefinition<${e.typeName}>(
+        ${e.factoryName},
+        isSingleton: ${e.isSingleton},
+      ),
+''',
+        ).join('\r\n')}
+    );
 ''';
 
 class GeneratorStub extends Generator {
@@ -47,11 +62,14 @@ class GeneratorStub extends Generator {
       final annotatedClasses = library.allElements
           .whereType<ClassElement>()
           .where(
-            (element) => element.metadata.isNotEmpty,
+            (element) =>
+                element.children.any((element) => element.metadata.isNotEmpty),
           )
           .where(
-            (element) => element.metadata
-                .any((e) => e.element?.displayName == 'ServiceDefinition'),
+            (element) => element.children.any(
+              (element) => element.metadata
+                  .any((e) => e.element?.displayName == 'FactoryDefinition'),
+            ),
           )
           .toList();
 
@@ -60,18 +78,34 @@ class GeneratorStub extends Generator {
           ..add("import '${annotatedClasses[0].location!.components[0]}';")
           ..add(
             code(
-              annotatedClasses
-                  .map(
-                    (e) => Registration(
-                      e.displayName.replaceFirst(
-                        e.displayName[0],
-                        e.displayName[0].toLowerCase(),
-                      ),
-                      e.displayName,
-                      false,
+              annotatedClasses.map(
+                (classElement) {
+                  // ignore: unused_local_variable
+                  final factoryElement = classElement.children.firstWhere(
+                    (element) => element.metadata.any(
+                      (e) => e.element?.displayName == 'FactoryDefinition',
                     ),
-                  )
-                  .toList(),
+                  );
+
+                  // ignore: unused_local_variable
+                  final factoryDefinitionElement = factoryElement.metadata
+                      .firstWhere(
+                        (e) => e.element?.displayName == 'FactoryDefinition',
+                      )
+                      .element!;
+
+                  return Registration(
+                    classElement.displayName.replaceFirst(
+                      classElement.displayName[0],
+                      classElement.displayName[0].toLowerCase(),
+                    ),
+                    classElement.displayName,
+                    false,
+                    factoryElement.displayName,
+                    false,
+                  );
+                },
+              ).toList(),
             ),
           );
       }

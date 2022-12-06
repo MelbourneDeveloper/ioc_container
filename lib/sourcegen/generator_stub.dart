@@ -19,7 +19,7 @@ class Registration {
 String code(List<Registration> registrations) => '''
 class CompileTimeSafeContainer {
   CompileTimeSafeContainer(
-${registrations.map((e) => '\t\tthis.${e.name},').join('\r\n')}
+${registrations.map((e) => '\t\tthis.${e.name}Definition,').join('\r\n')}
   ) {
     final builder = IocContainerBuilder()
 ${registrations.map((e) => '\t\t..addServiceDefinition<${e.typeName}>(${e.name}Definition)').join('\r\n')};
@@ -29,9 +29,7 @@ ${registrations.map((e) => '\t\t..addServiceDefinition<${e.typeName}>(${e.name}D
 
 ${registrations.map((e) => 'final ServiceDefinition<${e.typeName}> ${e.name}Definition;').join('\r\n')}
 
-  A get a => container<A>();
-  B get b => container<B>();
-  Future<C> get c => container.getAsync<C>();
+${registrations.map((e) => '${e.typeName} get ${e.name} => container<${e.typeName}>();').join('\r\n')}
 }
 ''';
 

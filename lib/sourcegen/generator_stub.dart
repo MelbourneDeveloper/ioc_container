@@ -2,6 +2,7 @@
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/src/builder/build_step.dart';
+import 'package:ioc_container/ioc_container.dart';
 import 'package:source_gen/source_gen.dart';
 
 class Registration {
@@ -42,8 +43,16 @@ class GeneratorStub extends Generator {
     final output = <String>[];
 
     if (forClasses) {
-      final classElements =
-          library.allElements.whereType<ClassElement>().toList();
+      final classElements = library.allElements
+          .whereType<ClassElement>()
+          .where(
+            (element) => element.metadata.isNotEmpty,
+          )
+          .where(
+            (element) => element.metadata
+                .any((e) => e.element?.displayName == 'ServiceDefinition'),
+          )
+          .toList();
 
       if (classElements.isNotEmpty) {
         output.add(code([Registration('a', 'A', false)]));

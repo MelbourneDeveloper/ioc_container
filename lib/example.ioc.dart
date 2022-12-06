@@ -1,7 +1,7 @@
 // DO NOT MODIFY THIS FILE. IT IS GENERATED.
 // coverage:ignore-file
 
-part of 'example.dart';
+part of example;
 
 // **************************************************************************
 // Generator: GeneratorStub

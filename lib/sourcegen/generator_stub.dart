@@ -22,14 +22,12 @@ class CompileTimeSafeContainer {
 ${registrations.map((e) => '\t\tthis.${e.name},').join('\r\n')}
   ) {
     final builder = IocContainerBuilder()
-${registrations.map((e) => '\t\t..addServiceDefinition(${e.name}Definition)').join('\r\n')};
+${registrations.map((e) => '\t\t..addServiceDefinition<${e.typeName}>(${e.name}Definition)').join('\r\n')};
     container = builder.toContainer();
   }
   late final IocContainer container;
 
-  final ServiceDefinition<A> aDefinition;
-  final ServiceDefinition<B> bDefinition;
-  final ServiceDefinition<Future<C>> cDefinition;
+${registrations.map((e) => 'final ServiceDefinition<${e.typeName}> ${e.name}Definition;').join('\r\n')}
 
   A get a => container<A>();
   B get b => container<B>();

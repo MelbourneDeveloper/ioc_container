@@ -16,17 +16,13 @@ class Registration {
   final bool isAsync;
 }
 
-String code(List<Registration> registrations) {
-  final join = registrations.map((e) => '\t\tthis.${e.name},').join('\r\n');
-  return '''
+String code(List<Registration> registrations) => '''
 class CompileTimeSafeContainer {
   CompileTimeSafeContainer(
-$join
+${registrations.map((e) => '\t\tthis.${e.name},').join('\r\n')}
   ) {
     final builder = IocContainerBuilder()
-      ..addServiceDefinition(aDefinition)
-      ..addServiceDefinition(bDefinition)
-      ..addServiceDefinition(cDefinition);
+${registrations.map((e) => '\t\t..addServiceDefinition(${e.name}Definition)').join('\r\n')};
     container = builder.toContainer();
   }
   late final IocContainer container;
@@ -40,7 +36,6 @@ $join
   Future<C> get c => container.getAsync<C>();
 }
 ''';
-}
 
 class GeneratorStub extends Generator {
   const GeneratorStub({this.forClasses = true, this.forLibrary = false});
@@ -49,16 +44,13 @@ class GeneratorStub extends Generator {
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
     final output = <String>[];
-    if (forLibrary) {
-      output.add(
-        '// LIBRARY CODE "${library.element.name.isNotEmpty ? library.element.name : library.element.source.uri.pathSegments.last}"',
-      );
-    }
-    if (forClasses) {
-      final whereType = library.allElements.whereType<ClassElement>().toList();
 
-      if (whereType.isNotEmpty) {
-        output.add('// CLASS CODE: "${code([Registration('a', 'A', false)])}"');
+    if (forClasses) {
+      final classElements =
+          library.allElements.whereType<ClassElement>().toList();
+
+      if (classElements.isNotEmpty) {
+        output.add(code([Registration('a', 'A', false)]));
       }
     }
 

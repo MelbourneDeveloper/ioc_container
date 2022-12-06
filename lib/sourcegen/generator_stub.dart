@@ -17,8 +17,10 @@ class Registration {
 }
 
 String code(List<Registration> registrations) => '''
-class CompileTimeSafeContainer {
-  CompileTimeSafeContainer(
+import 'package:ioc_container/ioc_container.dart';
+
+class NamedContainer {
+  NamedContainer(
 ${registrations.map((e) => '\t\tthis.${e.name}Definition,').join('\r\n')}
   ) {
     final builder = IocContainerBuilder()
@@ -58,7 +60,14 @@ class GeneratorStub extends Generator {
           code(
             annotatedClasses
                 .map(
-                  (e) => Registration(e.displayName, 'A', false),
+                  (e) => Registration(
+                    e.displayName.replaceFirst(
+                      e.displayName[0],
+                      e.displayName[0].toLowerCase(),
+                    ),
+                    e.displayName,
+                    false,
+                  ),
                 )
                 .toList(),
           ),

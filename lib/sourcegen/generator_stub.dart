@@ -16,12 +16,12 @@ class Registration {
   final bool isAsync;
 }
 
-String code(List<Registration> registrations) => '''
+String code(List<Registration> registrations) {
+  final join = registrations.map((e) => '\t\tthis.${e.name},').join('\r\n');
+  return '''
 class CompileTimeSafeContainer {
   CompileTimeSafeContainer(
-    this.aDefinition,
-    this.bDefinition,
-    this.cDefinition,
+$join
   ) {
     final builder = IocContainerBuilder()
       ..addServiceDefinition(aDefinition)
@@ -40,6 +40,7 @@ class CompileTimeSafeContainer {
   Future<C> get c => container.getAsync<C>();
 }
 ''';
+}
 
 class GeneratorStub extends Generator {
   const GeneratorStub({this.forClasses = true, this.forLibrary = false});
@@ -57,7 +58,7 @@ class GeneratorStub extends Generator {
       final whereType = library.allElements.whereType<ClassElement>().toList();
 
       if (whereType.isNotEmpty) {
-        output.add('// CLASS CODE: "${code([])}"');
+        output.add('// CLASS CODE: "${code([Registration('a', 'A', false)])}"');
       }
     }
 

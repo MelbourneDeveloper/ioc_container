@@ -102,7 +102,7 @@ class GeneratorStub extends Generator {
                     classElement.displayName,
                     false,
                     factoryElement.displayName,
-                    false,
+                    true,
                   );
                 },
               ).toList(),

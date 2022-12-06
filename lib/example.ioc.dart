@@ -22,3 +22,10 @@ class NamedContainer {
 
   Example get example => container<Example>();
 }
+
+NamedContainer compose() => NamedContainer(
+      const ServiceDefinition<Example>(
+        Example.fromContainer,
+        isSingleton: true,
+      ),
+    );

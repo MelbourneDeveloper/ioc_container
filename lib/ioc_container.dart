@@ -1,3 +1,9 @@
+class FactoryDefinition {
+  const FactoryDefinition({required this.isSingleton});
+
+  final bool isSingleton;
+}
+
 ///An exception that occurs when the service is not found
 class ServiceNotFoundException<T> implements Exception {
   ///Creates a new instance of [ServiceNotFoundException]

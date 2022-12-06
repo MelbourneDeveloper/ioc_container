@@ -4,9 +4,9 @@ import 'package:build/build.dart';
 import 'package:ioc_container/sourcegen/generator_stub.dart';
 import 'package:source_gen/source_gen.dart';
 
-Builder go(BuilderOptions options) => PartBuilder(
-      [const GeneratorStub()],
-      '.ioc.dart',
+Builder go(BuilderOptions options) => LibraryBuilder(
+      const GeneratorStub(),
+      generatedExtension: '.ioc.dart',
       header: '''
 // DO NOT MODIFY THIS FILE. IT IS GENERATED.
 // coverage:ignore-file

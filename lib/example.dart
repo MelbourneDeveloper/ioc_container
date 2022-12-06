@@ -6,8 +6,6 @@ import 'package:ioc_container/ioc_container.dart';
 
 //flutter pub run build_runner build lib --delete-conflicting-outputs
 
-part 'example.ioc.dart';
-
 Example newExample(IocContainer container) => const Example();
 
 @ServiceDefinition(newExample, isSingleton: true)

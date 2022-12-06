@@ -4,6 +4,43 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
 
+class Registration {
+  Registration(
+    this.name,
+    this.typeName,
+    this.isAsync,
+  );
+
+  final String name;
+  final String typeName;
+  final bool isAsync;
+}
+
+String code(List<Registration> registrations) => '''
+class CompileTimeSafeContainer {
+  CompileTimeSafeContainer(
+    this.aDefinition,
+    this.bDefinition,
+    this.cDefinition,
+  ) {
+    final builder = IocContainerBuilder()
+      ..addServiceDefinition(aDefinition)
+      ..addServiceDefinition(bDefinition)
+      ..addServiceDefinition(cDefinition);
+    container = builder.toContainer();
+  }
+  late final IocContainer container;
+
+  final ServiceDefinition<A> aDefinition;
+  final ServiceDefinition<B> bDefinition;
+  final ServiceDefinition<Future<C>> cDefinition;
+
+  A get a => container<A>();
+  B get b => container<B>();
+  Future<C> get c => container.getAsync<C>();
+}
+''';
+
 class GeneratorStub extends Generator {
   const GeneratorStub({this.forClasses = true, this.forLibrary = false});
   final bool forClasses, forLibrary;
@@ -17,9 +54,10 @@ class GeneratorStub extends Generator {
       );
     }
     if (forClasses) {
-      for (final classElement
-          in library.allElements.whereType<ClassElement>()) {
-        output.add('// CLASS CODE: "$classElement"');
+      final whereType = library.allElements.whereType<ClassElement>().toList();
+
+      if (whereType.isNotEmpty) {
+        output.add('// CLASS CODE: "${code([])}"');
       }
     }
 

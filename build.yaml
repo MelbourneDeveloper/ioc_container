@@ -1,0 +1,8 @@
+
+builders:
+  copyBuilder:
+    import: "package:ioc_container/sourcegen/builders.dart"
+    builder_factories: ["go"]
+    build_extensions: { "a.dart": ["a.ioc.dart"] }
+    build_to: source
+    auto_apply: root_package

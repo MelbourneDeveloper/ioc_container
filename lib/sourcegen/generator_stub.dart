@@ -56,22 +56,24 @@ class GeneratorStub extends Generator {
           .toList();
 
       if (annotatedClasses.isNotEmpty) {
-        output.add(
-          code(
-            annotatedClasses
-                .map(
-                  (e) => Registration(
-                    e.displayName.replaceFirst(
-                      e.displayName[0],
-                      e.displayName[0].toLowerCase(),
+        output
+          ..add("import '${annotatedClasses[0].location!.components[0]}';")
+          ..add(
+            code(
+              annotatedClasses
+                  .map(
+                    (e) => Registration(
+                      e.displayName.replaceFirst(
+                        e.displayName[0],
+                        e.displayName[0].toLowerCase(),
+                      ),
+                      e.displayName,
+                      false,
                     ),
-                    e.displayName,
-                    false,
-                  ),
-                )
-                .toList(),
-          ),
-        );
+                  )
+                  .toList(),
+            ),
+          );
       }
     }
 

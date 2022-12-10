@@ -60,20 +60,6 @@ class GeneratorStub extends Generator {
   ) async {
     final output = <String>[];
 
-    final annotatedClasses = library.allElements
-        .whereType<ClassElement>()
-        .where(
-          (element) =>
-              element.children.any((element) => element.metadata.isNotEmpty),
-        )
-        .where(
-          (element) => element.children.any(
-            (element) => element.metadata
-                .any((e) => e.element?.displayName == 'FactoryDefinition'),
-          ),
-        )
-        .toList();
-
     // ignore: unused_local_variable
     final annotatedFunctions = library.allElements
         .whereType<FunctionElement>()
@@ -82,43 +68,6 @@ class GeneratorStub extends Generator {
               .any((e) => e.element?.displayName == 'FactoryDefinition'),
         )
         .toList();
-
-    if (annotatedClasses.isNotEmpty) {
-      output
-        ..add("import '${annotatedClasses[0].location!.components[0]}';")
-        ..add(
-          code(
-            annotatedClasses.map(
-              (classElement) {
-                // ignore: unused_local_variable
-                final factoryElement = classElement.children.firstWhere(
-                  (element) => element.metadata.any(
-                    (e) => e.element?.displayName == 'FactoryDefinition',
-                  ),
-                );
-
-                // ignore: unused_local_variable
-                final factoryDefinitionElement = factoryElement.metadata
-                    .firstWhere(
-                      (e) => e.element?.displayName == 'FactoryDefinition',
-                    )
-                    .element!;
-
-                return Registration(
-                  classElement.displayName.replaceFirst(
-                    classElement.displayName[0],
-                    classElement.displayName[0].toLowerCase(),
-                  ),
-                  classElement.displayName,
-                  false,
-                  factoryElement.displayName,
-                  true,
-                );
-              },
-            ).toList(),
-          ),
-        );
-    }
 
     return output.join('\n');
   }

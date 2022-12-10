@@ -1,5 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages, public_member_api_docs, implementation_imports, lines_longer_than_80_chars
 
+//flutter pub run build_runner build --delete-conflicting-outputs
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:source_gen/source_gen.dart';
@@ -20,7 +22,7 @@ class Registration {
   final bool isSingleton;
 }
 
-String code(List<Registration> registrations) => '''
+String code(Iterable<Registration> registrations) => '''
 import 'package:ioc_container/ioc_container.dart';
 
 class NamedContainer {
@@ -60,15 +62,32 @@ class GeneratorStub extends Generator {
   ) async {
     final output = <String>[];
 
-    // ignore: unused_local_variable
-    final annotatedFunctions = library.allElements
-        .whereType<FunctionElement>()
-        .where(
-          (element) => element.metadata
-              .any((e) => e.element?.displayName == 'FactoryDefinition'),
-        )
-        .toList();
+    final annotatedFunctions = library.allElements.whereType<FunctionElement>()
+        // .where(
+        //   (functionElement) => functionElement.metadata.any(
+        //     (annotation) =>
+        //         annotation.element?.displayName == 'FactoryDefinition',
+        //   ),
+        // )
+        .map((functionElement) {
+      // ignore: unused_local_variable
+      final factoryDefinitionAnnotation = functionElement.metadata.firstWhere(
+        (annotation) => annotation.element?.displayName == 'FactoryDefinition',
+      );
+      final displayString =
+          functionElement.returnType.getDisplayString(withNullability: false);
+      return Registration(
+        displayString.replaceFirst(
+          displayString[0],
+          displayString[0].toLowerCase(),
+        ),
+        displayString,
+        false,
+        functionElement.displayName,
+        true,
+      );
+    }).toList();
 
-    return output.join('\n');
+    return output.join(code(annotatedFunctions));
   }
 }

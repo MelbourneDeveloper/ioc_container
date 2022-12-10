@@ -13,14 +13,8 @@ class FactoryDefinition {
   final bool isSingleton;
 }
 
-//@ServiceDefinition(newExample, isSingleton: true)
 class Example {
   const Example();
 
-  //@FactoryDefinition(isSingleton: false)
   factory Example.fromContainer(IocContainer container) => const Example();
-
-  // @FactoryDefinition(isSingleton: false)
-  // static Future<Example> fromContainerAsync(IocContainer container) async =>
-  //     const Example();
 }

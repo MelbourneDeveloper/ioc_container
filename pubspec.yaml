@@ -1,6 +1,6 @@
 name: ioc_container
 description: A Dart Ioc Container. Store and manage dependencies in one place keyed by type. It simplifies creating instances of your classes.
-version: 1.0.7
+version: 1.0.8
 repository: https://github.com/MelbourneDeveloper/ioc_container
 
 environment:
@@ -12,9 +12,9 @@ dependencies:
   build_config: ^1.1.0
 
 dev_dependencies:
-  austerity: ^0.0.9-beta
+  austerity: ^0.0.10-beta
+  dart_code_metrics: ^4.20.0
   build_runner: ^2.3.2
-  dart_code_metrics: ^5.1.0
   lints: ^2.0.0
   meta: ^1.7.0
   source_gen: ^1.2.3

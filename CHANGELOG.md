@@ -57,3 +57,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - More explicit wording around `getAsyncSafe()`
 ## 1.0.7
 - Format code
+## 1.0.8
+- Documentation emojification 🎉

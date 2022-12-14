@@ -5,8 +5,9 @@ class FactoryDefinition {
 }
 
 ///An exception that occurs when the service is not found
+///❌ An exception that occurs when the service is not found
 class ServiceNotFoundException<T> implements Exception {
-  ///Creates a new instance of [ServiceNotFoundException]
+  ///❌ Creates a new instance of [ServiceNotFoundException]
   const ServiceNotFoundException(this.message);
 
   ///The exception message
@@ -15,9 +16,9 @@ class ServiceNotFoundException<T> implements Exception {
   String toString() => 'ServiceNotFoundException: $message';
 }
 
-///Defines a factory for the service and whether or not it is a singleton.
+///📙 Defines a factory for the service and whether or not it is a singleton.
 class ServiceDefinition<T> {
-  ///Defines a factory for the service and whether or not it is a singleton.
+  ///📙 Defines a factory for the service and whether or not it is a singleton.
   const ServiceDefinition(
     this.factory, {
     this.isSingleton = false,
@@ -32,20 +33,20 @@ class ServiceDefinition<T> {
           "Service definitions can't have both dispose and disposeAsync",
         );
 
-  ///If true, only one instance of the service will be created and shared for
+  ///1️⃣ If true, only one instance of the service will be created and shared
   ///for the lifespan of the container.
   final bool isSingleton;
 
-  ///The factory that creates the instance of the service and can access other
-  ///services in this container
+  ///🏭 The factory that creates the instance of the service and can access
+  ///other services in this container
   final T Function(
     IocContainer container,
   ) factory;
 
-  ///The dispose method that is called when you dispose the scope
+  ///🗑️ The dispose method that is called when you dispose the scope
   final void Function(T service)? dispose;
 
-  ///The async dispose method that is called when you dispose the scope
+  ///🗑️ The async dispose method that is called when you dispose the scope
   final Future<void> Function(T service)? disposeAsync;
 
   void _dispose(T instance) => dispose?.call(instance);
@@ -53,12 +54,12 @@ class ServiceDefinition<T> {
   Future<void> _disposeAsync(T instance) async => disposeAsync?.call(instance);
 }
 
-///A built Ioc Container. To create a new [IocContainer], use
+///📦 A built Ioc Container. To create a new [IocContainer], use
 ///[IocContainerBuilder]. To get a service from the container, call
 ///[get], [getAsync], or [getAsyncSafe]
 ///Call [scoped] to get a scoped container
 class IocContainer {
-  ///Creates an IocContainer. You can build your own container by injecting
+  ///📦 Creates an IocContainer. You can build your own container by injecting
   ///service definitions and singletons here, but you should probably use
   ///[IocContainerBuilder] instead.
   const IocContainer(
@@ -67,18 +68,18 @@ class IocContainer {
     this.isScoped = false,
   });
 
-  ///The service definitions by type
+  ///📙 The service definitions by type
   final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
-  ///Map of singletons or scoped services by type. This map is mutable
+  ///1️⃣ Map of singletons or scoped services by type. This map is mutable
   ///so the container can store scope or singletons
   final Map<Type, Object> singletons;
 
-  ///If true, this container is a scoped container. Scoped containers never
+  ///⌖ If true, this container is a scoped container. Scoped containers never
   ///create more than one instance of a service
   final bool isScoped;
 
-  ///Get an instance of the service by type
+  ///👐 Get an instance of the service by type
   T get<T extends Object>() {
     final serviceDefinition = serviceDefinitionsByType[T];
 
@@ -105,21 +106,21 @@ class IocContainer {
     return service;
   }
 
-  ///This is a shortcut for [get]
+  ///👐 This is a shortcut for [get]
   T call<T extends Object>() => get<T>();
 }
 
-///A builder for creating an [IocContainer].
+///👷 A builder for creating an [IocContainer].
 class IocContainerBuilder {
-  ///Creates a container builder
+  ///👷 Creates a container builder
   IocContainerBuilder({this.allowOverrides = false});
   final Map<Type, ServiceDefinition<dynamic>> _serviceDefinitionsByType = {};
 
-  ///Throw an error if a service is added more than once. Set this to true when
-  ///you want to add mocks to set of services for a test.
+  /// 🔃 Throw an error if a service is added more than once. Set this to true
+  /// when you want to add mocks to set of services for a test.
   final bool allowOverrides;
 
-  ///Add a factory to the container.
+  ///📙 Add a factory to the container.
   void addServiceDefinition<T>(
     ///Add a factory and whether or not this service is a singleton
     ServiceDefinition<T> serviceDefinition,
@@ -135,7 +136,7 @@ class IocContainerBuilder {
     _serviceDefinitionsByType.putIfAbsent(T, () => serviceDefinition);
   }
 
-  ///Create an [IocContainer] from the [IocContainerBuilder].
+  ///📦 Create an [IocContainer] from the [IocContainerBuilder].
   IocContainer toContainer() => IocContainer(
         Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
           _serviceDefinitionsByType,
@@ -151,7 +152,7 @@ class IocContainerBuilder {
         ),
       );
 
-  ///Add a singleton factory to the container. The container
+  ///1️⃣ Add a singleton factory to the container. The container
   ///will only call this once throughout the lifespan of the container
   void addSingleton<T>(
     T Function(
@@ -166,7 +167,7 @@ class IocContainerBuilder {
         ),
       );
 
-  ///Add a factory to the container.
+  ///🏭 Add a factory to the container.
   void add<T>(
     T Function(
       IocContainer container,
@@ -181,7 +182,7 @@ class IocContainerBuilder {
         ),
       );
 
-  ///Adds an async [ServiceDefinition]
+  ///⌛ Adds an async [ServiceDefinition]
   void addAsync<T>(
     Future<T> Function(
       IocContainer container,
@@ -196,7 +197,7 @@ class IocContainerBuilder {
         ),
       );
 
-  ///Add an async singleton factory to the container. The container
+  ///1️⃣ ⌛ Add an async singleton factory to the container. The container
   ///will only call the factory once throughout the lifespan of the container
   void addSingletonAsync<T>(
     Future<T> Function(
@@ -214,7 +215,7 @@ class IocContainerBuilder {
 
 ///Extensions for IocContainer
 extension IocContainerExtensions on IocContainer {
-  ///Dispose all singletons or scope. Warning: don't use this on your root
+  ///🗑️ Dispose all singletons or scope. Warning: don't use this on your root
   ///container. You should only use this on scoped containers.
   Future<void> dispose() async {
     assert(isScoped, 'Only dispose scoped containers');
@@ -231,8 +232,8 @@ extension IocContainerExtensions on IocContainer {
     singletons.clear();
   }
 
-  ///Initalizes and stores each singleton in case you want a zealous container
-  ///instead of a lazy one
+  ///🏁 Initalizes and stores each singleton in case you want a zealous
+  ///container instead of a lazy one
   void initializeSingletons() {
     serviceDefinitionsByType.forEach((type, serviceDefinition) {
       if (serviceDefinition.isSingleton) {
@@ -246,12 +247,12 @@ extension IocContainerExtensions on IocContainer {
     });
   }
 
-  ///Gets a service, but each service in the object mesh will have only one
+  ///⌖ Gets a service, but each service in the object mesh will have only one
   ///instance. If you want to get multiple scoped objects, call [scoped] to
   ///get a reusable [IocContainer] and then call [get] or [getAsync] on that.
   T getScoped<T extends Object>() => scoped().get<T>();
 
-  ///Creates a new Ioc Container for a particular scope. Does not use existing
+  ///⌖ Creates a new Ioc Container for a particular scope. Does not use existing
   ///singletons/scope by default. Warning: if you use the existing singletons,
   ///calling [dispose] will dispose those singletons
   IocContainer scoped({
@@ -263,9 +264,10 @@ extension IocContainerExtensions on IocContainer {
         isScoped: true,
       );
 
-  ///Gets a service that requires async initialization. Add these services with
-  ///[IocContainerBuilder.addAsync] or [IocContainerBuilder.addSingletonAsync]
-  ///You can only use this on factories that return a Future<>.
+  ///⌛ Gets a service that requires async initialization. Add these services
+  ///with [IocContainerBuilder.addAsync] or
+  ///[IocContainerBuilder.addSingletonAsync] You can only use this on factories
+  ///that return a Future<>.
   ///Warning: if the definition is singleton/scoped and the Future fails, the factory will never return a
   ///valid value, so use [getAsyncSafe] to ensure the container doesn't store
   ///failed singletons
@@ -276,7 +278,7 @@ extension IocContainerExtensions on IocContainer {
   ///attempting to make the async initialization and merging the result with the
   ///current container if there is success.
   ///
-  ///Warning: allows reentrancy and does not do error handling.
+  ///⚠️ Warning: allows reentrancy and does not do error handling.
   ///If you call this more than once in parallel it will create multiple
   ///Futures - i.e. make multiple async calls. You need to guard against this
   ///and perform retries on failure. Be aware that this may happen even if
@@ -292,7 +294,7 @@ extension IocContainerExtensions on IocContainer {
     return service;
   }
 
-  ///Merge the singletons or scope from a container into this container. This
+  ///⛙ Merge the singletons or scope from a container into this container. This
   ///only moves singleton definitions by default, but you can override this
   ///with [mergeTest]
   void merge(

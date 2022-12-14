@@ -13,8 +13,8 @@ dependencies:
 
 dev_dependencies:
   austerity: ^0.0.10-beta
-  dart_code_metrics: ^4.20.0
   build_runner: ^2.3.2
+  dart_code_metrics: ^4.20.0
   lints: ^2.0.0
   meta: ^1.7.0
   source_gen: ^1.2.3

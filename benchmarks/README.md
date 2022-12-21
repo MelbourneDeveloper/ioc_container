@@ -6,6 +6,16 @@ _*Disclaimer: there is no claim that the methodology in these benchmarks is corr
 
 Times in microseconds (μs)
 
+macOS - MacBook Pro - M2
+
+|                  	| ioc_container         	| get_it                	| flutter_simple_DI     	| Riverpod             	|
+|------------------	|-----------------------	|-----------------------	|-----------------------	|----------------------	|
+| Get              	| 0.9456126666666667        | 1.1488485 	            | 14.400425597446416  	    |                      	|
+| Get Async        	| 7.209132581734837 	    | 5.6983695  	            |                       	|                      	|
+| Get Scoped       	| 2.2747897252102747  	    |                       	|                       	| 5.824236807585587 	  |
+| Register and Get 	| 3.059713470143265  	    | 8.067968 	                | 26.387617939769935 	    |                      	|
+
+
 macOS - Mac Mini - 3.2 Ghz 6 Core Intel Core i7
 
 |                  	| ioc_container         	| get_it                	| flutter_simple_DI     	| Riverpod             	|

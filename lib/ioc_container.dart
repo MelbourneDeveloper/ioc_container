@@ -73,7 +73,7 @@ class IocContainer {
   final bool isScoped;
 
   ///👐 Get an instance of the service by type
-  T get<T extends Object>() {
+  T get<T extends Object>({bool isTransient = false}) {
     final serviceDefinition = serviceDefinitionsByType[T];
 
     if (serviceDefinition == null) {
@@ -82,7 +82,7 @@ class IocContainer {
       );
     }
 
-    if (serviceDefinition.isSingleton || isScoped) {
+    if (serviceDefinition.isSingleton || isScoped && !isTransient) {
       final singletonValue = singletons[T];
 
       if (singletonValue != null) {
@@ -92,6 +92,8 @@ class IocContainer {
 
     final service = serviceDefinition.factory(this) as T;
 
+    if (isTransient) return service;
+
     if (serviceDefinition.isSingleton || isScoped) {
       singletons[T] = service;
     }
@@ -100,7 +102,9 @@ class IocContainer {
   }
 
   ///👐 This is a shortcut for [get]
-  T call<T extends Object>() => get<T>();
+  T call<T extends Object>({bool isTransient = false}) => get<T>(
+        isTransient: isTransient,
+      );
 }
 
 ///👷 A builder for creating an [IocContainer].

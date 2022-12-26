@@ -794,4 +794,17 @@ void main() {
     //Expect the future only ran once
     expect(futureCounter, 1);
   });
+
+  test('Test isTransient', () {
+    final builder = IocContainerBuilder()
+      ..add(
+        (container) => A('a'),
+      );
+    final container = builder.toContainer();
+    final scope = container.scoped();
+    final firstA = scope<A>();
+    final secondA = scope<A>(isTransient: true);
+    expect(identical(firstA, secondA), false);
+    expect(identical(firstA, scope<A>()), true);
+  });
 }

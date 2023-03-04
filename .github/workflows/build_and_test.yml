@@ -1,0 +1,45 @@
+name: build_and_test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        device:
+          - "ubuntu"
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.7.5"
+          channel: "stable"
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          architecture: x64
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: dart analyze lib --no-fatal-warnings
+
+      - name: Check Formatting
+        run: flutter format lib --set-exit-if-changed
+
+      - name: Run Tests
+        run: flutter test --coverage --update-goldens
+
+      - name: Check Test Coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v1.2.0
+        with:
+          path: "coverage/lcov.info"
+          min_coverage: 100

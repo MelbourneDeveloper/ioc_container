@@ -59,3 +59,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Format code
 ## 1.0.8
 - Documentation emojification 🎉
+## 1.0.9
+- Coverage badge

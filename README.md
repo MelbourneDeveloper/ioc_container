@@ -3,6 +3,8 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 ![example workflow](https://github.com/MelbourneDeveloper/ioc_container/actions/workflows/build_and_test.yml/badge.svg)
 
+<a href="https://codecov.io/gh/melbournedeveloper/ioc_container"><img src="https://codecov.io/gh/melbournedeveloper/ioc_container/branch/master/graph/badge.svg" alt="codecov"></a>
+
 ### Contents
 [Dependency Injection](#dependency-injection-di)
 

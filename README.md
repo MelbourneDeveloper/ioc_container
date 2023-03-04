@@ -1,6 +1,8 @@
 # Dart and Flutter Ioc Container
 A simple, fast IoC Container for Dart and Flutter. Use it for dependency injection or as a service locator. It has scoped, singleton, transient and async support.  
 
+https://github.com/MelbourneDeveloper/ioc_container/actions/workflows/build_and_test.yml/badge.svg
+
 ### Contents
 [Dependency Injection](#dependency-injection-di)
 

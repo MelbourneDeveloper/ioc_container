@@ -78,7 +78,7 @@ class IocContainer {
 
     if (serviceDefinition == null) {
       throw ServiceNotFoundException<T>(
-        'Service ${(T).toString()} not found',
+        'Service $T not found',
       );
     }
 

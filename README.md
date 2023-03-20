@@ -103,30 +103,71 @@ void main() {
 }
 ```
 
-We define the services: `AuthenticationService`, `UserService`, and `ProductService`. Then, we create an `IocContainerBuilder` and register these services using [`addSingletonService()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingletonService.html) and [`add()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/add.html) methods. You can also use the [`addSingleton`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingleton.html) method to add singletons. Finally, we build the container and retrieve the services to use them in our application like this: `container<ProductService>()`.
+We define the services: `AuthenticationService`, `UserService`, and `ProductService`. Then, we create an `IocContainerBuilder` and register these services using [`addSingletonService()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingletonService.html) and [`add()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/add.html) methods. You can also use the [`addSingleton()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingleton.html) method to add singletons. Finally, we build the container and retrieve the services to use them in our application like this: `container<ProductService>()`.
 
 ## Scoping and Disposal
-You can create a scoped container that will never create more than one instance of an object by type within the scope. In this example, we create an instance of `D`, but the object graph only has four object references. All instances of `A`, `B`, `C`, and `D` are the same. This is because the scoped container only creates one instance of each type. When you are finished with the scoped instances, you can await `dispose()` to dispose everything.
+You might require scoping and disposal when working with dependencies that require proper cleanup. Scoping refers to limiting the lifespan of resources or objects to a specific block of code or function. This prevents unintended access or manipulation. Disposal ensures that we properly release resources or objects after we use them. This can be important for memory management to prevent resource leaks, but is often not necessary for common Dart and Flutter objects that the garbage collector will destroy for you.
+
+A scoped container does not create more than one object instance of each registration. Even if you get the service twice, the same instance will be returned. This example demonstrates a typical case where you may need to dispose of a database connection.
 
 ```dart
-final builder = IocContainerBuilder()
-  ..addSingletonService(A('a'))
-  ..add((i) => B(i<A>()))
-  ..add<C>(
-    (i) => C(i<B>()),
-    dispose: (c) => c.dispose(),
-  )
-  ..add<D>(
-    (i) => D(i<B>(), i<C>()),
-    dispose: (d) => d.dispose(),
-  );
-final container = builder.toContainer();
-final scope = container.scoped();
-final d = scope<D>();
-await scope.dispose();
-expect(d.disposed, true);
-expect(d.c.disposed, true);
+import 'package:ioc_container/ioc_container.dart';
+
+class DatabaseConnection {
+  final String connectionString;
+
+  DatabaseConnection(this.connectionString);
+
+  void open() {
+    print('Opening database connection');
+  }
+
+  void close() {
+    print('Closing database connection');
+  }
+}
+
+class UserRepository {
+  final DatabaseConnection _databaseConnection;
+
+  UserRepository(this._databaseConnection);
+
+  List<String> getUsers() {
+    _databaseConnection.open();
+    print('Fetching users from the database');
+    return ['User 1', 'User 2'];
+  }
+
+  void dispose() {
+    _databaseConnection.close();
+  }
+}
+
+void main() async {
+  final builder = IocContainerBuilder()
+    ..add((container) => DatabaseConnection('my-connection-string'))
+    ..add<UserRepository>(
+      (container) => UserRepository(container<DatabaseConnection>()),
+      dispose: (userRepository) => userRepository.dispose(),
+    );
+
+  final container = builder.toContainer();
+
+  // Create a scope and use UserRepository within the scope
+  final scope = container.scoped();
+  final userRepository = scope<UserRepository>();
+  print(userRepository.getUsers());
+
+  // Dispose the scope, which will close the database connection
+  await scope.dispose();
+}
 ```    
+
+This example above defines a `DatabaseConnection` class that represents a connection to a database, and a `UserRepository` class that uses the `DatabaseConnection` to fetch user data. We use the container to manage the lifecycle of these services. We create an `IocContainerBuilder` to register the `DatabaseConnection` and `UserRepository`. We specify a `dispose` function for the `UserRepository` that will close the database connection when we dispose of the scope.
+
+The main function creates a scope to retrieve the `UserRepository` from the scoped container.  We fetch the user data and then dispose the scope. Disposing of the scope will invoke the `dispose()` function for `UserRepository`, which in turn closes the DatabaseConnection.
+
+*Note: all services in the scoped container exist for the lifespan of the scope. They act in a way that is similar to singletons, but when we call `dispose()` on the scope, it calls `dispose()` on each service registration.*
 
 ## Async Initialization
 You can do initialization work when instantiating an instance of your service. Just use `addAsync()` or `addSingletonAsync()`. When you need an instance, call the `getAsync()` method instead of `get()`. 

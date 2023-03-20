@@ -10,6 +10,12 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 [Why Use This Library?](#why-use-this-library)
 
+[Performance And Simplicity](#performance-and-simplicity)
+
+[Flutter](#flutter)
+
+[Getting Started](#getting-started)
+
 [Scoping and Disposal](#scoping-and-disposal)
 
 [Async Initialization](#async-initialization)
@@ -21,10 +27,10 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 [As a Service Locator](#as-a-service-locator)
 
 ## Dependency Injection (DI)
-[Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. 
+[Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. This is great for testing, and it makes your code more flexible. You can use test doubles in your tests, so they run quickly and reliably.
 
 ## Why Use This Library?
-You can
+This library makes it easy to
 - Easily replace services with mocks for testing
 - Configure the lifecycle of your services for singleton (one per app) or transient (always fresh)
 - Access factories for other services from any factory
@@ -32,10 +38,13 @@ You can
 - Create a scope for a set of services that you can dispose of together
 - Perform lazy initialization of services
 
-This library is fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries. That means you can copy/paste it anywhere, and it's simple enough to understand and change if you find an issue. Global factories get complicated when you need to manage the lifecycle of your services or replace services for testing. This library solves that problem.
+## Performance and Simplicity
+This library is fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. That means you can copy/paste it anywhere, and it's simple enough to understand and change if you find an issue. Global factories get complicated when you need to manage the lifecycle of your services or replace services for testing. This library solves that problem.
 
-Use the package [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) to add your container to the widget tree as an `InheritedWidget`
+## Flutter
+You can use this library as is by declaring a global instance and use it anywhere (See [As a Service Locator](#as-a-service-locator)). Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an `InheritedWidget`. 
 
+## Getting Started
 This example adds a singleton and three transient dependencies to the container. We build the container by calling `toContainer()`. Lastly, we get dependencies from the container by calling `get<T>()`, `getAsync<T>()`, or just like the last line here. 
 
 ```dart

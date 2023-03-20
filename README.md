@@ -24,6 +24,8 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 [Add Firebase](#add-firebase)
 
+[Inspired By .NET](#inspired-by-net)
+
 [As a Service Locator](#as-a-service-locator)
 
 ## Dependency Injection (DI)
@@ -42,7 +44,7 @@ This library makes it easy to
 This library is fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. That means you can copy/paste it anywhere, and it's simple enough to understand and change if you find an issue. Global factories get complicated when you need to manage the lifecycle of your services or replace services for testing. This library solves that problem.
 
 ## Flutter
-You can use this library as is by declaring a global instance and use it anywhere (See [As a Service Locator](#as-a-service-locator)). Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an `InheritedWidget`. 
+You can use this library as is by declaring a global instance and use it anywhere (See [As a Service Locator](#as-a-service-locator)). Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an `InheritedWidget`. This is a good alternative to Provider, which can get complicated when you need to manage the lifecycle of your services or replace services for testing. 
 
 ## Getting Started
 This example adds a singleton and three transient dependencies to the container. We build the container by calling `toContainer()`. Lastly, we get dependencies from the container by calling `get<T>()`, `getAsync<T>()`, or just like the last line here. 
@@ -270,7 +272,7 @@ If you have any further issues, see the [FlutterFire documentation](https://fire
 
 ## Inspired By .NET
 
-This library takes inspiration from DI in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like [`IServiceCollection`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection?view=dotnet-plat-ext-7.0) in ASP.NET Core. Then you build it with the `toContainer()` method, which is like the [`BuildServiceProvider()`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectioncontainerbuilderextensions.buildserviceprovider?view=dotnet-plat-ext-6.0) method in ASP.NET Core. DI is an established pattern on which the whole .NET ecosystem and many other ecosystems depend.
+This library takes inspiration from DI in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like [`IServiceCollection`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection?view=dotnet-plat-ext-7.0) in ASP.NET Core. Then you build it with the `toContainer()` method, which is like the [`BuildServiceProvider()`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectioncontainerbuilderextensions.buildserviceprovider?view=dotnet-plat-ext-6.0) method in ASP.NET Core. DI is an established pattern on which the whole .NET ecosystem and many other ecosystems depend. This library does not reinvent the wheel, it just makes it easy to use in Flutter and Dart.
 
 ## As a Service Locator
 You can use an `IocContainer` as a service locator in Flutter and Dart. A service locator is basically just an IoC Container that you can access globally. Just declare an instance in a global location to get your dependencies anywhere with scoping. 

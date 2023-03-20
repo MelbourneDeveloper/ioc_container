@@ -170,34 +170,62 @@ The main function creates a scope to retrieve the `UserRepository` from the scop
 *Note: all services in the scoped container exist for the lifespan of the scope. They act in a way that is similar to singletons, but when we call `dispose()` on the scope, it calls `dispose()` on each service registration.*
 
 ## Async Initialization
-You can do initialization work when instantiating an instance of your service. Just use `addAsync()` or `addSingletonAsync()`. When you need an instance, call the `getAsync()` method instead of `get()`. 
+You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
 
-If you need to instantiate an async singleton that could throw an error, you can use `getAsyncSafe()`. This method does not store the singleton or any sub-dependencies until it awaits successfully. But it does allow reentrancy, so you must guard against calling it multiple times in parallel. Be aware that this may happen even if you only call this method in a single location in your app. You may need a an async lock.
+_Warning: if you get a singleton with `getAsync()` and the call fails, the singleton will always return a `Future` with an error for the lifespan of the container._ You may need to take extra precautions by wrapping the initialization in a try/catch and using a retry. You may need to eventually cancel the operation if retrying fails. For this reason, you should probably scope the container and only use the result in your main container once it succeeds.
 
-Use this approach with the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
+Check out the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
 
 ```dart
-final builder = IocContainerBuilder()
-  ..addAsync(
-    (c) => Future<A>.delayed(
-      //Simulate doing some async work
-      const Duration(milliseconds: 10),
-      () => A('a'),
-    ),
-  )
-  ..addAsync(
-    (c) => Future<B>.delayed(
-      //Simulate doing some async work
-      const Duration(milliseconds: 10),
-      () async => B(await c.getAsync<A>()),
-    ),
-  );
+import 'package:ioc_container/ioc_container.dart';
 
-final container = builder.toContainer();
-final b = await container.getAsync<B>();
+class DatabaseService {
+  DatabaseService(this.connectionString);
+  final String connectionString;
+
+  Future<DatabaseService> init() async {
+    // Simulate async initialization, such as connecting to the database.
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    print('DatabaseService initialized');
+    return this;
+  }
+}
+
+class UserService {
+  UserService(this._dbService);
+  final DatabaseService _dbService;
+
+  Future<UserService> init() async {
+    // Simulate async initialization, such as fetching user data.
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    print('UserService initialized');
+    return this;
+  }
+}
+
+void main() async {
+  final builder = IocContainerBuilder()
+    ..addSingletonAsync(
+      (container) async => DatabaseService('connection_string').init(),
+    )
+    ..addSingletonAsync(
+      (container) async =>
+          UserService(await container.getAsync<DatabaseService>()).init(),
+    );
+
+  final container = builder.toContainer();
+
+  print('Waiting for services to initialize at...${DateTime.now()}');
+
+  final userService = await container.getAsync<UserService>();
+
+  print('Got initialized service at at...${DateTime.now()}');
+  
+  // Use the userService instance for your application logic.
+}
 ```
 
-_Warning: if you get a singleton with getAsync() and the calls fails, the singleton will always return a `Future` with an error for the lifespan of the container_
+The example above uses a container to manage async initialization for two services: `DatabaseService` and `UserService`. It simulates time-consuming initialization tasks for each service. It uses `addSingletonAsync()` to register the services. When the `getAsync()` call completes, the app can use the `UserService` instance because the initialization is complete.
 
 ## Testing
 Check out the sample app on the example tab. It is a simple Flutter Counter example, and a widget test is in the `test` folder. It gives an example of substituting a Mock/Fake for a real service. Using dependency injection in your app, you can write widget tests like this. Compose your object graph like this:

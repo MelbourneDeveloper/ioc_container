@@ -47,17 +47,63 @@ This library is fast and holds up to comparable libraries in terms of performanc
 You can use this library as is by declaring a global instance and use it anywhere (See [As a Service Locator](#as-a-service-locator)). That means you can access it inside or outside the widget tree. Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an `InheritedWidget`. This is a good alternative to Provider, which can get complicated when you need to manage the lifecycle of your services or replace services for testing. 
 
 ## Getting Started
-This example adds a singleton and three transient dependencies to the container. We build the container by calling `toContainer()`. Lastly, we get dependencies from the container by calling `get<T>()`, `getAsync<T>()`, or just like the last line here. 
+This example registers a singleton and two transient dependencies to the container. 
 
 ```dart
-final builder = IocContainerBuilder()
-  ..addSingletonService(A('a'))
-  ..add((container) => B(container<A>()))
-  ..add((container) => C(container<B>()))
-  ..add((container) => D(container<B>(), container<C>()));
-final container = builder.toContainer();
-final d = container<D>();
+import 'package:ioc_container/ioc_container.dart';
+
+// These are some example services
+
+class AuthenticationService {
+  String login(String username, String password) {
+    // Implement your authentication logic here
+    return 'Logged in';
+  }
+}
+
+class UserService {
+  final AuthenticationService _authenticationService;
+
+  UserService(this._authenticationService);
+
+  String getUserDetails() {
+    // Implement your user details retrieval logic here
+    return 'User Details';
+  }
+}
+
+class ProductService {
+  List<String> getProducts() {
+    // Implement your product retrieval logic here
+    return ['Product 1', 'Product 2', 'Product 3'];
+  }
+}
+
+void main() {
+  // Create a container builder and register your services
+  final builder = IocContainerBuilder()
+    //The app only has one AuthenticationService for the lifespan of the app (Singleton)
+    ..addSingletonService(AuthenticationService())
+    //We mint a new UserService/ProductService for each usage
+    ..add((container) => UserService(container<AuthenticationService>()))
+    ..add((container) => ProductService());
+
+  // Build the container
+  final container = builder.toContainer();
+
+  // Retrieve your services from the container
+  final authService = container<AuthenticationService>();
+  final userService = container<UserService>();
+  final productService = container<ProductService>();
+
+  // Use the services
+  print(authService.login('user', 'password'));
+  print(userService.getUserDetails());
+  print(productService.getProducts());
+}
 ```
+
+We define the services: `AuthenticationService`, `UserService`, and `ProductService`. Then, we create an `IocContainerBuilder` and register these services using [`addSingletonService()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingletonService.html) and [`add()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/add.html) methods. You can also use the [`addSingleton`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingleton.html) method to add singletons. Finally, we build the container and retrieve the services to use them in our application like this: `container<ProductService>()`.
 
 ## Scoping and Disposal
 You can create a scoped container that will never create more than one instance of an object by type within the scope. In this example, we create an instance of `D`, but the object graph only has four object references. All instances of `A`, `B`, `C`, and `D` are the same. This is because the scoped container only creates one instance of each type. When you are finished with the scoped instances, you can await `dispose()` to dispose everything.

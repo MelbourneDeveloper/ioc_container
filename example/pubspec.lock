@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  austerity:
+    dependency: "direct dev"
+    description:
+      name: austerity
+      sha256: "801f78c176fc2a7762d2d6ff21ef38c2cda2a2296d572f7a393263c6d3b57c2d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.10-beta"
   boolean_selector:
     dependency: transitive
     description:
@@ -81,7 +89,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.8"
+    version: "1.0.9"
   js:
     dependency: transitive
     description:

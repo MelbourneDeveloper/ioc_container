@@ -12,6 +12,8 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 [Performance And Simplicity](#performance-and-simplicity)
 
+[Installation](#installation)
+
 [Getting Started](#getting-started)
 
 [Flutter](#flutter)
@@ -46,6 +48,25 @@ The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/
 Most importantly, it has no external dependencies so you don't have to worry about it pulling down packages you don't need.
 
 You can copy/paste it anywhere, including Dartpad (as long as you follow the license), and it's simple enough to understand and change if you find an issue. Global factories get complicated when you need to manage the lifecycle of your services or replace services for testing. This library solves that problem.
+
+## Installation
+
+Run this command:
+
+With Dart:
+
+ `$ dart pub add ioc_container`
+
+With Flutter:
+
+ `$ flutter pub add ioc_container`
+
+This will add a line like this to your package's pubspec.yaml (and run an implicit dart pub get):
+
+```yaml
+dependencies:
+  ioc_container: ^1.0.9 ## Or, latest version
+```
 
 ## Getting Started
 This example registers a singleton and two transient dependencies to the container. 

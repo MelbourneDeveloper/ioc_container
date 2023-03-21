@@ -61,3 +61,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Documentation emojification 🎉
 ## 1.0.9
 - Coverage badge
+## 1.0.10
+- Documentation overhaul

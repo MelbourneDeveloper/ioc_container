@@ -138,7 +138,7 @@ We define the services: `AuthenticationService`, `UserService`, and `ProductServ
 ## Flutter
 You can use ioc_container as a service locator by declaring a global instance and using it anywhere. This is a good alternative to get_it. You can access it inside or outside the widget tree. Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an [`InheritedWidget`](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html). This is a good alternative to Provider, which can get complicated when you need to manage the lifecycle of your services or replace services for testing. 
 
-Here is a Flutter example that uses a container as a service locator. 
+Here is a Flutter example that uses a container as a service locator. You can also see the Flutter pub dev example app [here](https://pub.dev/packages/ioc_container/example).
 
 ```dart
 import 'package:flutter/material.dart';

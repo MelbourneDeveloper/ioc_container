@@ -6,6 +6,9 @@ A simple, fast IoC Container / Service Locator for Dart and Flutter. Use it for 
 <a href="https://codecov.io/gh/melbournedeveloper/ioc_container"><img src="https://codecov.io/gh/melbournedeveloper/ioc_container/branch/main/graph/badge.svg" alt="codecov"></a>
 
 ### Contents
+
+[Introduction](#introduction)
+
 [Dependency Injection](#dependency-injection-di)
 
 [Why Use This Library?](#why-use-this-library)
@@ -27,6 +30,12 @@ A simple, fast IoC Container / Service Locator for Dart and Flutter. Use it for 
 [Add Firebase](#add-firebase)
 
 [Inspired By .NET](#inspired-by-net)
+
+## Introduction
+
+Containers give you an easy way to create the dependencies that your app requires. 
+ioc_container embraces the [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) pattern.
+
 
 ## Dependency Injection (DI)
 [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. This is great for testing, and it makes your code more flexible. You can use test doubles in your tests, so they run quickly and reliably.
@@ -61,7 +70,7 @@ With Flutter:
 
  `$ flutter pub add ioc_container`
 
-This will add a line like this to your package's pubspec.yaml (and run an implicit dart pub get):
+This will add a line like this to your package's `pubspec.yaml` (and run an implicit dart pub get):
 
 ```yaml
 dependencies:
@@ -223,7 +232,7 @@ The Flutter app above defines three services (`NotificationService`, `OrderServi
 Check out the Flutter [widget tests](example/test/widget_test.dart) for the example app
 
 ## Scoping and Disposal
-You might require scoping and disposal when working with dependencies that require proper cleanup. Scoping refers to limiting the lifespan of resources or objects to a specific block of code or function. This prevents unintended access or manipulation. Disposal ensures that we properly release resources or objects after we use them. This can be important for memory management to prevent resource leaks, but is often not necessary for common Dart and Flutter objects that the garbage collector will destroy for you.
+You might require scoping and disposal when working with dependencies that require proper cleanup. Scoping refers to limiting the lifespan of resources or objects to a specific block of code or function. This prevents unintended access or manipulation. Disposal ensures that we properly release resources or objects after we use them. This can be important for memory management to prevent resource leaks but is often not necessary for common Dart and Flutter objects that the garbage collector will destroy for you.
 
 A scoped container does not create more than one object instance of each registration. Even if you get the service twice, the same instance will be returned. This example demonstrates a typical case where you may need to dispose of a database connection.
 
@@ -282,7 +291,7 @@ void main() async {
 
 This example above defines a `DatabaseConnection` class that represents a connection to a database, and a `UserRepository` class that uses the `DatabaseConnection` to fetch user data. We use the container to manage the lifecycle of these services. We create an `IocContainerBuilder` to register the `DatabaseConnection` and `UserRepository`. We specify a `dispose` function for the `UserRepository` that will close the database connection when we dispose of the scope.
 
-The main function creates a scope to retrieve the `UserRepository` from the scoped container.  We fetch the user data and then dispose the scope. Disposing of the scope will invoke the `dispose()` function for `UserRepository`, which in turn closes the DatabaseConnection.
+The main function creates a scope to retrieve the `UserRepository` from the scoped container.  We fetch the user data and then dispose of the scope. Disposing of the scope will invoke the `dispose()` function for `UserRepository`, which in turn closes the DatabaseConnection.
 
 *Note: all services in the scoped container exist for the lifespan of the scope. They act in a way that is similar to singletons, but when we call `dispose()` on the scope, it calls `dispose()` on each service registration.*
 

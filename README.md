@@ -12,9 +12,9 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 
 [Performance And Simplicity](#performance-and-simplicity)
 
-[Flutter](#flutter)
-
 [Getting Started](#getting-started)
+
+[Flutter](#flutter)
 
 [Scoping and Disposal](#scoping-and-disposal)
 
@@ -25,8 +25,6 @@ A simple, fast IoC Container for Dart and Flutter. Use it for dependency injecti
 [Add Firebase](#add-firebase)
 
 [Inspired By .NET](#inspired-by-net)
-
-[As a Service Locator](#as-a-service-locator)
 
 ## Dependency Injection (DI)
 [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. This is great for testing, and it makes your code more flexible. You can use test doubles in your tests, so they run quickly and reliably.
@@ -41,10 +39,13 @@ This library makes it easy to
 - Perform lazy initialization of services
 
 ## Performance and Simplicity
-This library is fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. That means you can copy/paste it anywhere, and it's simple enough to understand and change if you find an issue. Global factories get complicated when you need to manage the lifecycle of your services or replace services for testing. This library solves that problem.
+This library is objectively fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. 
 
-## Flutter
-You can use this library as is by declaring a global instance and use it anywhere (See [As a Service Locator](#as-a-service-locator)). That means you can access it inside or outside the widget tree. Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an `InheritedWidget`. This is a good alternative to Provider, which can get complicated when you need to manage the lifecycle of your services or replace services for testing. 
+The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. According to [codecov](https://app.codecov.io/gh/melbournedeveloper/ioc_container), it weighs in at 81 lines of code, which makes it the lightest container I know about. 
+
+Most importantly, it has no external dependencies so you don't have to worry about it pulling down packages you don't need.
+
+You can copy/paste it anywhere, including Dartpad (as long as you follow the license), and it's simple enough to understand and change if you find an issue. Global factories get complicated when you need to manage the lifecycle of your services or replace services for testing. This library solves that problem.
 
 ## Getting Started
 This example registers a singleton and two transient dependencies to the container. 
@@ -104,6 +105,95 @@ void main() {
 ```
 
 We define the services: `AuthenticationService`, `UserService`, and `ProductService`. Then, we create an `IocContainerBuilder` and register these services using [`addSingletonService()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingletonService.html) and [`add()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/add.html) methods. You can also use the [`addSingleton()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingleton.html) method to add singletons. Finally, we build the container and retrieve the services to use them in our application like this: `container<ProductService>()`.
+
+## Flutter
+You can use ioc_container as a service locator by declaring a global instance and using it anywhere. This is a good alternative to get_it. You can access it inside or outside the widget tree. Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an `InheritedWidget`. This is a good alternative to Provider, which can get complicated when you need to manage the lifecycle of your services or replace services for testing. 
+
+Here is a Flutter example that uses a container as a service locator. 
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:ioc_container/ioc_container.dart';
+
+class NotificationService {
+  void sendEmail(String email, String message) {
+    // Implement your email sending logic here
+    print('Email sent to $email: $message');
+  }
+}
+
+class OrderService {
+  void placeOrder(String item, int quantity, String email) {
+    final notificationService = serviceLocator<NotificationService>();
+    // Implement your order placement logic here
+    print('Order placed for $quantity x $item');
+    notificationService.sendEmail(
+        email, 'Order confirmation for $quantity x $item');
+  }
+}
+
+class InventoryService {
+  List<String> getAvailableItems() {
+    // Implement your inventory retrieval logic here
+    return ['Item 1', 'Item 2', 'Item 3'];
+  }
+}
+
+// Create a builder so we can replace dependencies later
+final IocContainerBuilder builder = IocContainerBuilder(allowOverrides: true)
+  ..addSingletonService(NotificationService())
+  ..add((container) => OrderService())
+  ..addSingleton((container) => InventoryService());
+
+// Create a global service locator instance
+late final IocContainer serviceLocator;
+
+void main() {
+  serviceLocator = builder.toContainer();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final inventoryService = serviceLocator<InventoryService>();
+    final availableItems = inventoryService.getAvailableItems();
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'IoC Container Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('IoC Container Demo')),
+        body: ListView.builder(
+          itemCount: availableItems.length,
+          itemBuilder: (context, index) {
+            final item = availableItems[index];
+            return ListTile(
+              title: Text(item),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  serviceLocator<OrderService>()
+                      .placeOrder(item, 1, 'customer@example.com');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Order placed for $item')),
+                  );
+                },
+                child: const Text('Order'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
 
 ## Scoping and Disposal
 You might require scoping and disposal when working with dependencies that require proper cleanup. Scoping refers to limiting the lifespan of resources or objects to a specific block of code or function. This prevents unintended access or manipulation. Disposal ensures that we properly release resources or objects after we use them. This can be important for memory management to prevent resource leaks, but is often not necessary for common Dart and Flutter objects that the garbage collector will destroy for you.
@@ -499,22 +589,3 @@ If you have any further issues, see the [FlutterFire documentation](https://fire
 ## Inspired By .NET
 
 This library takes inspiration from DI in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like [`IServiceCollection`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection?view=dotnet-plat-ext-7.0) in ASP.NET Core. Then you build it with the `toContainer()` method, which is like the [`BuildServiceProvider()`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectioncontainerbuilderextensions.buildserviceprovider?view=dotnet-plat-ext-6.0) method in ASP.NET Core. DI is an established pattern on which the whole .NET ecosystem and many other ecosystems depend. This library does not reinvent the wheel, it just makes it easy to use in Flutter and Dart.
-
-## As a Service Locator
-You can use an `IocContainer` as a service locator in Flutter and Dart. A service locator is basically just an IoC Container that you can access globally. Just declare an instance in a global location to get your dependencies anywhere with scoping. 
-
-```dart
-///This container is final and can be used anywhere...
-late final IocContainer container;
-
-void main(List<String> arguments) {
-  final builder = IocContainerBuilder()
-    ..addSingletonService(A('A nice instance of A'))
-    ..add((i) => B(i<A>()))
-    ..add((i) => C(i<B>()))
-    ..add((i) => D(i<B>(), i<C>()));
-  container = builder.toContainer();
-  final d = container.scoped()<D>();
-  print('Hello world: ${d.c.b.a.name}');
-}
-```

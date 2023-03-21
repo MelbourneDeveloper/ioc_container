@@ -33,9 +33,7 @@ A simple, fast IoC Container / Service Locator for Dart and Flutter. Use it for 
 
 ## Introduction
 
-Containers give you an easy way to create the dependencies that your app requires. 
-ioc_container embraces the [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) pattern.
-
+Containers and service locators give you an easy way to lazily create the dependencies that your app requires. As your app grows in complexity, you will find that static variables or global factories start to become cumbersome and error-prone. Containers give you a consistent approach to managing the lifespan of your dependencies and make it easy to replace services with mocks for testing. ioc_container embraces the [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) pattern, and offers an approach that is standard across programming languages and frameworks. The implementation of this approach transcends Dart or Flutter. It is a proven and reliable method employed by developers across various technologies for well over a decade.
 
 ## Dependency Injection (DI)
 [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. This is great for testing, and it makes your code more flexible. You can use test doubles in your tests, so they run quickly and reliably.

@@ -228,7 +228,7 @@ void main() async {
 The example above uses a container to manage async initialization for two services: `DatabaseService` and `UserService`. It simulates time-consuming initialization tasks for each service. It uses `addSingletonAsync()` to register the services. When the `getAsync()` call completes, the app can use the `UserService` instance because the initialization is complete.
 
 ## Testing
-We compose the container with a builder. You can replace services in the builder if the allowOverrides flag is set to true. This is useful for testing. Expose the builder in a location where the tests can access it, add new mock/fake registrations, and call `toContainer()` to get the container with test doubles.
+We compose the container with a builder. You can replace services in the builder if the `allowOverrides` flag is set to true. This is useful for testing. Expose the builder in a location where the tests can access it, add new mock/fake registrations, and call `toContainer()` to get the container with test doubles.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -394,22 +394,15 @@ await tester.pumpWidget(const AppRoot());
 }
 ```
 
-These tests validate the login functionality of the app by using fake authentication services. One test checks for a successful login scenario, ensuring the "Login Successful" message is displayed. The other test examines the invalid login scenario, verifying that the "Invalid credentials" error message appears.
+These tests validate the login functionality of the app with fake authentication services. One test checks for a successful login scenario, ensuring the "Login Successful" message is displayed. The other test examines the invalid login scenario, verifying that the "Invalid credentials" error message appears.
 
 ## Add Firebase
-ioc_container makes accessing, initializing, and testing Firebase easy. 
+ioc_container makes accessing, initializing, and testing Firebase easy. Configure Firebase with the [official documentation](https://firebase.google.com/docs/flutter/setup?platform=ios), and make sure your `pubspec.yaml` has these dependencies.
 
-### Add these 
-dependencies:
 - ioc_container
 - firebase_core
 - firebase_auth
-- firebase_messaging
 - cloud_firestore
-
-dev dependencies (for testing):
-- firebase_auth_mocks
-- fake_cloud_firestore
 
 ### Extension Method
 Add this file
@@ -418,11 +411,11 @@ Add this file
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:ioc_container/ioc_container.dart';
 
-///Extensions for wiring up FlutterFire
+///Extensions for wiring up FlutterFire. This adds
+///[FirebaseApp], [FirebaseAuth], and [FirebaseFirestore] as singletons
 extension FlutterFireExtensions on IocContainerBuilder {
   void addFirebase() {
     //These factories are all async because we need to ensure that Firebase is initialized
@@ -445,12 +438,6 @@ extension FlutterFireExtensions on IocContainerBuilder {
         app: await container.getAsync<FirebaseApp>(),
       ),
     );
-    addSingletonAsync((container) async {
-      //Ensure we have already initialized Firebase
-      await container.getAsync<FirebaseApp>();
-
-      return FirebaseMessaging.instance;
-    });
   }
 }
 ```
@@ -461,10 +448,9 @@ Call `addFirebase()` on your builder to add the factories to your composition an
 IocContainerBuilder compose() => IocContainerBuilder(allowOverrides: true)
   ..addFirebase()
   //You must add your own FirebaseOptions to the composition
-  ..addSingleton<FirebaseOptions>((container) => MyFirebaseOptions(
+  ..addSingleton<FirebaseOptions>((container) => DefaultOptions(
         apiKey: apiKey,
         appId: appId,
-        messagingSenderId: messagingSenderId2,
         projectId: projectId,
       ));
 ```
@@ -480,17 +466,19 @@ Replace the dependencies with fakes or mocks in your tests like this.
 
 ```dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:example_2/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ioc_container_firebase/main.dart';
+import '../firebase.dart';
 
 void main() {
   testWidgets('Testing with Firebase', (WidgetTester tester) async {
     final builder = compose();
 
-    var fakeFirebaseFirestore = FakeFirebaseFirestore();
+    //TODO: Create mocks for Firebase or use a library like firestore_fakes to 
+    //mock the dependencies
+
+    var fakeFirebaseFirestore = FirebaseFirestoreFake();
 
     //TODO: Put fake data in fakeFirebaseFirestore here. The app will consume it.
 

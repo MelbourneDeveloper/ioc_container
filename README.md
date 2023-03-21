@@ -228,50 +228,173 @@ void main() async {
 The example above uses a container to manage async initialization for two services: `DatabaseService` and `UserService`. It simulates time-consuming initialization tasks for each service. It uses `addSingletonAsync()` to register the services. When the `getAsync()` call completes, the app can use the `UserService` instance because the initialization is complete.
 
 ## Testing
-Check out the sample app on the example tab. It is a simple Flutter Counter example, and a widget test is in the `test` folder. It gives an example of substituting a Mock/Fake for a real service. Using dependency injection in your app, you can write widget tests like this. Compose your object graph like this:
+We compose the container with a builder. You can replace services in the builder if the allowOverrides flag is set to true. This is useful for testing. Expose the builder in a location where the tests can access it, add new mock/fake registrations, and call `toContainer()` to get the container with test doubles.
 
 ```dart
-IocContainerBuilder compose({bool allowOverrides = false}) =>
-    IocContainerBuilder(allowOverrides: allowOverrides)
-      ..addSingleton<AppChangeNotifier>(
-        (container) => AppChangeNotifier(),
-      );
+import 'package:flutter/material.dart';
+import 'package:ioc_container/ioc_container.dart';
+
+abstract class AuthService {
+  Future<bool> authenticate(String username, String password);
+}
+
+class RealAuthService implements AuthService {
+  @override
+  Future<bool> authenticate(String username, String password) async {
+    // Your real authentication logic here.
+    return username == 'bob' && password == '123';
+  }
+}
+
+//We declare the builder and container as top level variables here just to make
+//the example clearer
+final builder = IocContainerBuilder(allowOverrides: true)
+  ..addSingleton<AuthService>((container) => RealAuthService());
+
+late IocContainer container;
 
 void main() {
-  runApp(
-    MyApp(
-      container: compose().toContainer(),
-    ),
-  );
+  container = builder.toContainer();
+  runApp(const AppRoot());
+}
+
+class AppRoot extends StatelessWidget {
+  const AppRoot({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) => const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: LoginScreen(),
+        ),
+      );
+}
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              TextButton(
+                onPressed: () async {
+                  final success = await container<AuthService>().authenticate(
+                    usernameController.text,
+                    passwordController.text,
+                  );
+
+                  await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(success ? 'Welcome' : 'Error'),
+                      content: Text(
+                        success ? 'Login Successful' : 'Invalid credentials',
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
 }
 ```
 
-And then override services with fakes/mocks like this.
+The code above defines a simple Flutter app with a login screen that uses an IoC container to manage its dependencies. The app has an `AuthService` to authenticate users, with the `RealAuthService` registered in the container. This is how we can mock the dependencies and replace the `RealAuthService` with `MockAuthService` in our tests.
 
 ```dart
-testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-  final builder = compose(allowOverrides: true)
-    ..addSingleton<AppChangeNotifier>((container) => FakeAppChangeNotifier());
+import 'package:flutter/material.dart';
+import 'package:flutter_application_9/main.dart';
+import 'package:flutter_test/flutter_test.dart';
 
-  // Build our app and trigger a frame.
-  await tester.pumpWidget(MyApp(
-    container: builder.toContainer(),
-  ));
+class MockAuthService implements AuthService {
+  @override
+  Future<bool> authenticate(String username, String password) async =>
+      username == 'test' && password == '1234';
+}
 
-  // Verify that our counter starts at 0.
-  expect(find.text('0'), findsOneWidget);
-  expect(find.text('1'), findsNothing);
+void main() {
+  setUp(
+    () {
+      builder.addSingleton<AuthService>((container) => MockAuthService());
+      container = builder.toContainer();
+    },
+  );
 
-  // Tap the '+' icon and trigger a frame.
-  await tester.tap(find.byIcon(Icons.add));
-  await tester.pump();
+  testWidgets('Test LoginScreen with MockAuthService', (tester) async {
+await tester.pumpWidget(const AppRoot());
 
-  // Verify that our counter has incremented.
-  expect(find.text('0'), findsNothing);
-  expect(find.text('1'), findsOneWidget);
-});
+    // Enter correct credentials
+    await tester.enterText(find.byType(TextField).at(0), 'test');
+    await tester.enterText(find.byType(TextField).at(1), '1234');
+
+    // Find and tap the Login button
+    final loginButton = find.widgetWithText(TextButton, 'Login');
+    await tester.tap(loginButton);
+
+    await tester.pumpAndSettle();
+
+    // Find the AlertDialog
+    final alertDialog = find.byType(AlertDialog);
+
+    // Check if the AlertDialog is present
+    expect(alertDialog, findsOneWidget);
+
+    // Check if the AlertDialog displays the expected success message
+    final errorMessage = find.text('Login Successful');
+    expect(errorMessage, findsOneWidget);
+  });
+
+  testWidgets('Invalid login scenario', (tester) async {
+    await tester.pumpWidget(const AppRoot());
+
+    // Enter invalid credentials
+    await tester.enterText(find.byType(TextField).at(0), 'wrong_user');
+    await tester.enterText(find.byType(TextField).at(1), 'wrong_password');
+
+    // Find and tap the Login button
+    final loginButton = find.widgetWithText(TextButton, 'Login');
+    await tester.tap(loginButton);
+
+    await tester.pumpAndSettle();
+
+    // Find the AlertDialog
+    final alertDialog = find.byType(AlertDialog);
+
+    // Check if the AlertDialog is present
+    expect(alertDialog, findsOneWidget);
+
+    // Check if the AlertDialog displays the expected error message
+    final errorMessage = find.text('Invalid credentials');
+    expect(errorMessage, findsOneWidget);
+  });
 }
 ```
+
+These tests validate the login functionality of the app by using fake authentication services. One test checks for a successful login scenario, ensuring the "Login Successful" message is displayed. The other test examines the invalid login scenario, verifying that the "Invalid credentials" error message appears.
 
 ## Add Firebase
 ioc_container makes accessing, initializing, and testing Firebase easy. 

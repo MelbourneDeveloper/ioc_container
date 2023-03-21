@@ -43,7 +43,7 @@ This library makes it easy to
 ### Performance and Simplicity
 This library is objectively fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. 
 
-The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. According to [codecov](https://app.codecov.io/gh/melbournedeveloper/ioc_container), it weighs in at 81 lines of code, which makes it the lightest container I know about. 
+The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. According to [codecov](https://app.codecov.io/gh/melbournedeveloper/ioc_container), it weighs in at 81 lines of code, which makes it the lightest container I know about. It is stable and has 100% test coverage. At least three apps in the stores use this library in production.
 
 Most importantly, it has no external dependencies so you don't have to worry about it pulling down packages you don't need.
 

@@ -1,43 +1,45 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
+import 'package:ioc_container_example/main.dart';
 
-import 'package:example/main.dart';
+class FakeSettingsService extends SettingsService {
+  @override
+  final bool isLightMode;
 
-///This does exactly the same thing as AppChangeNotifier
-///but it shows you how you can use Mock/Fake instead of the real service
-class FakeAppChangeNotifier extends ChangeNotifier
-    implements AppChangeNotifier {
-  int counter = 0;
-
-  void increment() {
-    counter++;
-    notifyListeners();
-  }
+  FakeSettingsService({required this.isLightMode});
 }
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    final builder = compose(allowOverrides: true)
-      ..addSingleton<AppChangeNotifier>((container) => FakeAppChangeNotifier());
+  group('Theme Switcher App', () {
+    setUp(() {
+      //Replace the existing settings service
+      builder.addSingletonService<SettingsService>(
+          FakeSettingsService(isLightMode: false));
 
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp(
-      container: builder.toContainer(),
-    ));
+      serviceLocator = builder.toContainer();
+    });
 
-    //Wait for the progress indicator to disappear
-    await tester.pumpAndSettle();
+    testWidgets('Toggle theme changes brightness', (WidgetTester tester) async {
+      await tester.pumpWidget(MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      final finder = find.byType(MaterialApp);
+      final app = tester.widget<MaterialApp>(finder);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      //Expect dark because that's what the fake settings service returns
+      expect(app.theme!.brightness, Brightness.dark);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      final toggleButton = find.byType(FloatingActionButton);
+      expect(toggleButton, findsOneWidget);
+
+      //Tap the toggle button
+      await tester.tap(toggleButton);
+      await tester.pumpAndSettle();
+
+      final finder2 = find.byType(MaterialApp);
+      final app2 = tester.widget<MaterialApp>(finder2);
+
+      //Expect light because we changed the theme
+      expect(app2.theme!.brightness, Brightness.light);
+    });
   });
 }

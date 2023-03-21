@@ -46,6 +46,7 @@ This library makes it easy to
 - Perform async initialization work inside the factories
 - Create a scope for a set of services that you can dispose of together
 - Perform lazy initialization of services
+- It's standard. It aims at being a standard dependency injector so anyone who understands DI can use this library.
 
 ### Performance and Simplicity
 This library is objectively fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. 

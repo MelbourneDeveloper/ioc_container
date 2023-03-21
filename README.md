@@ -179,6 +179,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //It's safe to use the service locator here in a StatelessWidget
+    //because the InventoryService is a singleton
     final inventoryService = serviceLocator<InventoryService>();
     final availableItems = inventoryService.getAvailableItems();
 
@@ -215,6 +217,8 @@ class MyApp extends StatelessWidget {
   }
 }
 ```
+
+The Flutter app above defines three services (`NotificationService`, `OrderService`, and `InventoryService`) and registers them in the container using the `builder`. We create the `serviceLocator` to access these services as needed in the application. In the `StatelessWidget` `MyApp`, we use the `InventoryService` to retrieve available items, and the `OrderService` to place an order, which in turn uses the `NotificationService` to send an email.
 
 ## Scoping and Disposal
 You might require scoping and disposal when working with dependencies that require proper cleanup. Scoping refers to limiting the lifespan of resources or objects to a specific block of code or function. This prevents unintended access or manipulation. Disposal ensures that we properly release resources or objects after we use them. This can be important for memory management to prevent resource leaks, but is often not necessary for common Dart and Flutter objects that the garbage collector will destroy for you.

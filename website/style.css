@@ -1,0 +1,31 @@
+body {
+    font-family: 'Nunito';
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.navbar {
+    background-color: #343a40;
+}
+
+.navbar-brand {
+    color: #ffffff;
+}
+
+.navbar-nav .nav-link {
+    color: #ffffff;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #cccccc;
+}
+
+.jumbotron {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 0;
+}
+
+.container {
+    margin-top: 2rem;
+}

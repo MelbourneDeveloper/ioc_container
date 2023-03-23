@@ -808,4 +808,24 @@ void main() {
     expect(container.hasInstance<A>(), true);
     expect(container.hasInstance<B>(), false);
   });
+
+  test('Test fallback', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final container1 = builder.toContainer();
+    final container2 = container1.scoped();
+    final container3 = container2.scoped();
+    final containers = [container1, container2, container3];
+    container1<A>();
+    var index = 2;
+    final a2 = container3.fallback<A>(() {
+      index--;
+      return containers[index];
+    });
+    expect(index, 0);
+    expect(a2, isNotNull);
+    expect(container3.hasInstance<A>(), false);
+    expect(container2.hasInstance<A>(), false);
+    expect(container1.hasInstance<A>(), true);
+  });
 }

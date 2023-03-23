@@ -319,6 +319,14 @@ extension IocContainerExtensions on IocContainer {
 
   bool hasInstance<T extends Object>() => singletons.containsKey(T);
 
-  T fallback<T extends Object>(IocContainer container) =>
-      hasInstance<T>() ? singletons[T]! as T : container.get<T>();
+  T fallback<T extends Object>(
+    IocContainer Function() next,
+  ) {
+    final parent = next();
+    return hasInstance<T>()
+        ? singletons[T]! as T
+        : parent.hasInstance<T>()
+            ? parent.get<T>()
+            : fallback(next);
+  }
 }

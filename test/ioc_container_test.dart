@@ -817,7 +817,7 @@ void main() {
     final container3 = container2.scoped();
     final containers = [container1, container2, container3];
     container1<A>();
-    var index = 2;
+    var index = 3;
     final a2 = container3.fallback<A>(() {
       index--;
       return containers[index];

@@ -327,14 +327,17 @@ extension IocContainerExtensions on IocContainer {
   ///instance of the service, or calls [get] the last container returned by
   ///[nextParent] if the service does not already exist
   T fallback<T extends Object>(
-    IocContainer Function() nextParent,
+    IocContainer? Function() nextParent,
   ) {
+    if (hasInstance<T>()) {
+      return get<T>();
+    }
+
     final parent = nextParent();
-    return hasInstance<T>()
-        ? singletons[T]! as T
-        : parent.hasInstance<T>()
-            ? parent.get<T>()
-            : fallback(nextParent);
+    if (parent == null) return get<T>();
+    return parent.hasInstance<T>()
+        ? parent.get<T>()
+        : parent.fallback(nextParent);
   }
 }
 
@@ -342,8 +345,9 @@ extension IocContainersExtensions on List<IocContainer> {
   T fallback<T extends Object>() {
     var index = length - 1;
     return this[index].fallback<T>(() {
+      final iocContainer = this[index];
       index--;
-      return this[index];
+      return iocContainer;
     });
   }
 }

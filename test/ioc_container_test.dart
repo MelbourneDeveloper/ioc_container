@@ -830,6 +830,28 @@ void main() {
     expect(identical(a, a2), true);
   });
 
+  test('Test fallback - No Containers Have Singleton', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final parent = builder.toContainer();
+    final child = parent.scoped();
+    final childOfChild = child.scoped();
+    final containers = [parent, child, childOfChild];
+    var index = 2;
+    final a2 = childOfChild.fallback<A>(() {
+      if (index < 0) return null;
+      final container = containers[index];
+      index--;
+      return container;
+    });
+    expect(index, -1);
+    expect(a2, isNotNull);
+    expect(childOfChild.hasInstance<A>(), false);
+    expect(child.hasInstance<A>(), false);
+    expect(parent.hasInstance<A>(), true);
+    expect(identical(a, a2), true);
+  });
+
   test('Test fallback on a list of containers', () async {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);

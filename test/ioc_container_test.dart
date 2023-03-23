@@ -809,28 +809,30 @@ void main() {
     expect(container.hasInstance<B>(), false);
   });
 
-  test('Test fallback', () async {
+  test('Test Fallback Resolution', () async {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);
-    final container1 = builder.toContainer();
-    final container2 = container1.scoped();
-    final container3 = container2.scoped();
-    final containers = [container1, container2, container3];
-    container1<A>();
-    var index = 3;
-    final a2 = container3.fallback<A>(() {
+    final parent = builder.toContainer();
+    final child = parent.scoped();
+    final childOfChild = child.scoped();
+    final containers = [parent, child, childOfChild];
+    parent<A>();
+    var index = 2;
+    final a2 = childOfChild.fallback<A>(() {
+      if (index < 0) return null;
+      final container = containers[index];
       index--;
-      return containers[index];
+      return container;
     });
-    expect(index, 0);
+    expect(index, -1);
     expect(a2, isNotNull);
-    expect(container3.hasInstance<A>(), false);
-    expect(container2.hasInstance<A>(), false);
-    expect(container1.hasInstance<A>(), true);
+    expect(childOfChild.hasInstance<A>(), false);
+    expect(child.hasInstance<A>(), false);
+    expect(parent.hasInstance<A>(), true);
     expect(identical(a, a2), true);
   });
 
-  test('Test fallback - No Containers Have Singleton', () async {
+  test('Test Fallback Resolution - No Containers Have Singleton', () async {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);
     final parent = builder.toContainer();
@@ -852,7 +854,7 @@ void main() {
     expect(identical(a, a2), true);
   });
 
-  test('Test fallback on a list of containers', () async {
+  test('Test Fallback Resolution on a List of Containers', () async {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);
     final parent = builder.toContainer();
@@ -875,7 +877,7 @@ void main() {
   });
 
   test(
-      'Test fallback on a list of containers '
+      'Test Fallback Resolution on a List of Containers '
       '- No Containers Have Singleton', () async {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);

@@ -317,16 +317,33 @@ extension IocContainerExtensions on IocContainer {
     }
   }
 
+  ///✔️ Checks if an instance of the service already exists in the container.
+  ///This will be true if the service is a singleton and has already been
+  ///resolved once. This will also be true if the service is scoped and has been
+  ///resolved in the current scope.
   bool hasInstance<T extends Object>() => singletons.containsKey(T);
 
+  ///➰ Recursively climbs through a hierarchy of containers until it finds the
+  ///instance of the service, or calls [get] the last container returned by
+  ///[nextParent] if the service does not already exist
   T fallback<T extends Object>(
-    IocContainer Function() next,
+    IocContainer Function() nextParent,
   ) {
-    final parent = next();
+    final parent = nextParent();
     return hasInstance<T>()
         ? singletons[T]! as T
         : parent.hasInstance<T>()
             ? parent.get<T>()
-            : fallback(next);
+            : fallback(nextParent);
+  }
+}
+
+extension IocContainersExtensions on List<IocContainer> {
+  T fallback<T extends Object>() {
+    var index = length - 1;
+    return this[index].fallback<T>(() {
+      index--;
+      return this[index];
+    });
   }
 }

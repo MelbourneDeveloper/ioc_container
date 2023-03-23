@@ -827,5 +827,28 @@ void main() {
     expect(container3.hasInstance<A>(), false);
     expect(container2.hasInstance<A>(), false);
     expect(container1.hasInstance<A>(), true);
+    expect(identical(a, a2), true);
+  });
+
+  test('Test fallback on a list of containers', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final parent = builder.toContainer();
+    final child = parent.scoped();
+    final childOfChild = child.scoped();
+
+    //Resolve on the parent (i.e. get the singleton)
+    parent<A>();
+
+    //Resolve down the hierarchy from the child first
+    final a2 = [parent, child, childOfChild].fallback<A>();
+
+    expect(a2, isNotNull);
+
+    //Only the parent should have the singleton because that's where it was 
+    //resolved
+    expect(parent.hasInstance<A>(), true);
+    expect(childOfChild.hasInstance<A>(), false);
+    expect(child.hasInstance<A>(), false);
   });
 }

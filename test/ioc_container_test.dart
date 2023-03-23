@@ -845,10 +845,27 @@ void main() {
 
     expect(a2, isNotNull);
 
-    //Only the parent should have the singleton because that's where it was 
+    //Only the parent should have the singleton because that's where it was
     //resolved
     expect(parent.hasInstance<A>(), true);
     expect(childOfChild.hasInstance<A>(), false);
     expect(child.hasInstance<A>(), false);
+  });
+
+  test(
+      'Test fallback on a list of containers '
+      '- No Containers Have Singleton', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final parent = builder.toContainer();
+    final child = parent.scoped();
+    final childOfChild = child.scoped();
+    final containers = [parent, child, childOfChild];
+    final a2 = containers.fallback<A>();
+    expect(a2, isNotNull);
+    expect(childOfChild.hasInstance<A>(), false);
+    expect(child.hasInstance<A>(), false);
+    expect(parent.hasInstance<A>(), true);
+    expect(identical(a, a2), true);
   });
 }

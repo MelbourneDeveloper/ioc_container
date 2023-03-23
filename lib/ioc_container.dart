@@ -343,11 +343,13 @@ extension IocContainerExtensions on IocContainer {
 
 extension IocContainersExtensions on List<IocContainer> {
   T fallback<T extends Object>() {
-    var index = length - 1;
-    return this[index].fallback<T>(() {
-      final iocContainer = this[index];
-      index--;
-      return iocContainer;
-    });
+    for (var i = length - 1; i >= 0; i--) {
+      if (this[i].hasInstance<T>() || i == 0) {
+        return this[i].get<T>();
+      }
+    }
+
+    //This shouldn't happen but the compiler doesn't know that
+    return this[0].get<T>();
   }
 }

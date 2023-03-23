@@ -794,4 +794,18 @@ void main() {
     //Expect the future only ran once
     expect(futureCounter, 1);
   });
+
+  test('Test hasInstance', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final container = builder.toContainer();
+
+    //Make sure its lazy
+    expect(container.hasInstance<A>(), false);
+
+    container.get<A>();
+
+    expect(container.hasInstance<A>(), true);
+    expect(container.hasInstance<B>(), false);
+  });
 }

@@ -342,6 +342,9 @@ extension IocContainerExtensions on IocContainer {
 }
 
 extension IocContainersExtensions on List<IocContainer> {
+  ///Iterates through the list of containers from the last element to the first
+  /// and returns the first one that already has an instance of the service,
+  /// or calls get<>() on the first container in the list
   T fallback<T extends Object>() {
     assert(length > 0, 'The list must have at least one element');
 

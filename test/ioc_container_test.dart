@@ -832,6 +832,44 @@ void main() {
     expect(identical(a, a2), true);
   });
 
+  test('Test Fallback Resolution - No fallback necessary', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final container = builder.toContainer();
+
+    container<A>();
+
+    final a2 = container.fallback<A>(() => null);
+
+    expect(a2, isNotNull);
+
+    expect(container.hasInstance<A>(), true);
+    expect(identical(a, a2), true);
+  });
+
+  test('Test Fallback Resolution (List) - No fallback necessary', () async {
+    final a = A('a');
+    final builder = IocContainerBuilder()..addSingletonService(a);
+    final container = builder.toContainer();
+
+    final containers = [container];
+    container<A>();
+
+    final a2 = containers.fallback<A>();
+
+    expect(a2, isNotNull);
+
+    expect(container.hasInstance<A>(), true);
+    expect(identical(a, a2), true);
+  });
+
+  test('Test No Items In List Throws Exception', () async {
+    expect(
+      () => <IocContainer>[].fallback<A>(),
+      throwsA(isA<AssertionError>()),
+    );
+  });
+
   test('Test Fallback Resolution - No Containers Have Singleton', () async {
     final a = A('a');
     final builder = IocContainerBuilder()..addSingletonService(a);

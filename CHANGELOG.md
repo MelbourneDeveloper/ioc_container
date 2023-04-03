@@ -66,3 +66,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 ## 1.0.11
 - Upgrade austerity
 - Documentation changes and add icon
+## 1.0.12
+- Fix icon link

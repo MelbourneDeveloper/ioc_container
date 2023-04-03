@@ -1,4 +1,4 @@
-# Dart and Flutter Ioc Container
+# ioc_container
 A lightweight, flexible, and high-performance dependency injection and service location library for Dart and Flutter.
 
 ![ioc_container](images/ioc_container-256x256.png)

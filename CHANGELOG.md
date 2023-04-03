@@ -63,3 +63,6 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Coverage badge
 ## 1.0.10
 - Documentation overhaul
+## 1.0.11
+- Upgrade austerity
+- Documentation changes and add icon

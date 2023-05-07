@@ -612,7 +612,7 @@ void main() {
 
   test('Test Merge - Scope Non Singleton Scope Not Merged', () async {
     final builder = IocContainerBuilder()
-      ..add(
+      ..addAsync(
         (c) async => A('a'),
       );
 

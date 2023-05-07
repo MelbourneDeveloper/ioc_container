@@ -204,6 +204,7 @@ class IocContainerBuilder {
 
     addServiceDefinition<Future<T>>(
       ServiceDefinition<Future<T>>(
+        isSingleton: true,
         (container) async =>
             container<AsyncLock<T>>().locked(() => factory(container)),
       ),

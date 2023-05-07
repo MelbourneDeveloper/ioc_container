@@ -439,7 +439,7 @@ void main() {
     var futureCounter = 0;
 
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) => Future<A>.delayed(
           //Simulate doing some async work
           const Duration(milliseconds: 10),
@@ -472,12 +472,12 @@ void main() {
 
   test('Test Async Singletons With Scope', () async {
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) => Future<A>(
           () => A('a'),
         ),
       )
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) => Future<B>(
           () async => B(await c.getAsync<A>()),
         ),
@@ -498,7 +498,7 @@ void main() {
     var throwException = true;
 
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) async => throwException ? throw Exception() : A('a'),
       );
 
@@ -529,7 +529,7 @@ void main() {
     var throwException = true;
 
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) async => throwException ? throw Exception() : A('a'),
       );
 
@@ -636,7 +636,7 @@ void main() {
 
   test('Test initSafe', () async {
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) async => A('a'),
       );
 

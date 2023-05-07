@@ -184,13 +184,17 @@ class IocContainerBuilder {
     )
         factory, {
     Future<void> Function(T service)? disposeAsync,
-  }) =>
-      addServiceDefinition<Future<T>>(
-        ServiceDefinition<Future<T>>(
-          (container) async => factory(container),
-          disposeAsync: (service) async => disposeAsync?.call(await service),
-        ),
-      );
+  }) {
+    addSingletonService(AsyncLock<T>());
+
+    addServiceDefinition<Future<T>>(
+      ServiceDefinition<Future<T>>(
+        (container) async =>
+            container<AsyncLock<T>>().locked(() => factory(container)),
+        disposeAsync: (service) async => disposeAsync?.call(await service),
+      ),
+    );
+  }
 
   ///1️⃣ ⌛ Add an async singleton factory to the container. The container
   ///will only call the factory once throughout the lifespan of the container

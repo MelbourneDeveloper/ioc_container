@@ -1,3 +1,5 @@
+import 'package:ioc_container/async_lock.dart';
+
 ///❌ An exception that occurs when the service is not found
 class ServiceNotFoundException<T> implements Exception {
   ///❌ Creates a new instance of [ServiceNotFoundException]
@@ -49,7 +51,7 @@ class ServiceDefinition<T> {
 
 ///📦 A built Ioc Container. To create a new [IocContainer], use
 ///[IocContainerBuilder]. To get a service from the container, call
-///[get], [getAsync], or [getAsyncSafe]
+///[get], or [getAsync]
 ///Call [scoped] to get a scoped container
 class IocContainer {
   ///📦 Creates an IocContainer. You can build your own container by injecting
@@ -259,32 +261,39 @@ extension IocContainerExtensions on IocContainer {
 
   ///⌛ Gets a service that requires async initialization. Add these services
   ///with [IocContainerBuilder.addAsync] or
-  ///[IocContainerBuilder.addSingletonAsync] You can only use this on factories
+  ///[IocContainerBuilder.addSingletonAsync]. You can only use this on factories
   ///that return a Future<>.
-  ///Warning: if the definition is singleton/scoped and the Future fails, the factory will never return a
-  ///valid value, so use [getAsyncSafe] to ensure the container doesn't store
-  ///failed singletons
-  Future<T> getAsync<T>() async => get<Future<T>>();
+  Future<T> getAsync<T>() async {
+    final serviceDefinition = serviceDefinitionsByType[Future<T>];
 
-  ///See [getAsync].
-  ///Makes an async call by creating a temporary scoped container,
-  ///attempting to make the async initialization and merging the result with the
-  ///current container if there is success.
-  ///
-  ///⚠️ Warning: allows reentrancy and does not do error handling.
-  ///If you call this more than once in parallel it will create multiple
-  ///Futures - i.e. make multiple async calls. You need to guard against this
-  ///and perform retries on failure. Be aware that this may happen even if
-  ///you only call this method in a single location in your app.
-  ///You may need a an async lock.
-  Future<T> getAsyncSafe<T>() async {
-    final scope = scoped();
+    if (serviceDefinition == null) {
+      throw ServiceNotFoundException<T>(
+        'Service $T fssfsdf not found',
+      );
+    }
 
-    final service = await scope.getAsync<T>();
+    if (serviceDefinition.isSingleton || isScoped) {
+      final singletonValue = singletons[Future<T>];
 
-    merge(scope);
+      if (singletonValue != null) {
+        return singletonValue as Future<T>;
+      }
 
-    return service;
+      final lock = get<AsyncLock<T>>();
+
+      // ignore: unawaited_futures
+      final future =
+          lock.locked(() async => serviceDefinition.factory(this) as Future<T>);
+
+      // ignore: unawaited_futures
+      future.then((_) {
+        singletons[Future<T>] = future;
+      });
+
+      return future;
+    }
+
+    return serviceDefinition.factory(this) as Future<T>;
   }
 
   ///⛙ Merge the singletons or scope from a container into this container. This

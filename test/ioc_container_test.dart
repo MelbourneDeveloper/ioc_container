@@ -535,14 +535,14 @@ void main() {
 
     final container = builder.toContainer();
 
-    expect(() async => container.getAsyncSafe<A>(), throwsException);
+    expect(() async => container.getAsync<A>(), throwsException);
 
     //We should not have stored the bad future
     expect(container.singletons.isEmpty, true);
 
     throwException = false;
 
-    final a = await container.getAsyncSafe<A>();
+    final a = await container.getAsync<A>();
 
     expect(
       identical(
@@ -642,7 +642,7 @@ void main() {
 
     final container = builder.toContainer();
 
-    final a = await container.getAsyncSafe<A>();
+    final a = await container.getAsync<A>();
 
     expect(
       identical(

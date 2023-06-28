@@ -152,8 +152,7 @@ class IocContainerBuilder {
   void addSingleton<T>(
     T Function(
       IocContainer container,
-    )
-        factory,
+    ) factory,
   ) =>
       addServiceDefinition<T>(
         ServiceDefinition<T>(
@@ -166,8 +165,7 @@ class IocContainerBuilder {
   void add<T>(
     T Function(
       IocContainer container,
-    )
-        factory, {
+    ) factory, {
     void Function(T service)? dispose,
   }) =>
       addServiceDefinition<T>(
@@ -181,8 +179,7 @@ class IocContainerBuilder {
   void addAsync<T>(
     Future<T> Function(
       IocContainer container,
-    )
-        factory, {
+    ) factory, {
     Future<void> Function(T service)? disposeAsync,
   }) =>
       addServiceDefinition<Future<T>>(
@@ -197,16 +194,14 @@ class IocContainerBuilder {
   void addSingletonAsync<T>(
     Future<T> Function(
       IocContainer container,
-    )
-        factory,
+    ) factory,
   ) {
-    addSingletonService(AsyncLock<T>());
+    addSingleton((container) => AsyncLock<T>(() async => factory(container)));
 
     addServiceDefinition<Future<T>>(
       ServiceDefinition<Future<T>>(
         isSingleton: true,
-        (container) async =>
-            container<AsyncLock<T>>().locked(() => factory(container)),
+        (container) async => container<AsyncLock<T>>().execute(),
       ),
     );
   }
@@ -286,8 +281,7 @@ extension IocContainerExtensions on IocContainer {
       final lock = get<AsyncLock<T>>();
 
       // ignore: unawaited_futures
-      final future =
-          lock.locked(() async => serviceDefinition.factory(this) as Future<T>);
+      final future = lock.execute();
 
       // ignore: unawaited_futures
       future.then((_) {
@@ -310,8 +304,7 @@ extension IocContainerExtensions on IocContainer {
       Type type,
       ServiceDefinition<dynamic>? serviceDefinition,
       Object? singleton,
-    )?
-        mergeTest,
+    )? mergeTest,
   }) {
     for (final key in container.singletons.keys.where(
       mergeTest != null

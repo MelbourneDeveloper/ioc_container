@@ -52,10 +52,9 @@ packages:
   austerity:
     dependency: "direct dev"
     description:
-      name: austerity
-      sha256: "752608b94a84d1765e8eafa877463b6823da08c3e65477b965429fee2aca79d1"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../austerity"
+      relative: true
+    source: path
     version: "1.0.0"
   boolean_selector:
     dependency: transitive
@@ -482,4 +481,4 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.18.0 <3.0.0"
+  dart: ">=2.18.0 <4.0.0"

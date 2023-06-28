@@ -3,7 +3,10 @@ import 'dart:async';
 /// A lock that ensures that only one async function executes at a time.
 class AsyncLock<T> {
   /// Creates a new [AsyncLock].
-  AsyncLock({this.retainFutureErrors = false});
+  AsyncLock(this.function, {this.retainFutureErrors = false});
+
+  /// The function to execute.
+  final FutureOr<T> Function() function;
 
   Completer<T>? _completer;
 
@@ -13,8 +16,7 @@ class AsyncLock<T> {
 
   /// Executes the given [function] and returns the value, but ensures that
   /// only one async function executes at a time.
-  Future<T> locked(FutureOr<T> Function() function) async =>
-      _completer?.future ?? _executeFunction(function);
+  Future<T> execute() async => _completer?.future ?? _executeFunction(function);
 
   /// Creates a new [Completer], executes the given [function] and
   /// returns the value.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ioc_container/async_lock.dart';
 
 ///❌ An exception that occurs when the service is not found
@@ -59,7 +61,8 @@ class IocContainer {
   ///[IocContainerBuilder] instead.
   const IocContainer(
     this.serviceDefinitionsByType,
-    this.singletons, {
+    this.singletons,
+    this.locks, {
     this.isScoped = false,
   });
 
@@ -69,6 +72,9 @@ class IocContainer {
   ///1️⃣ Map of singletons or scoped services by type. This map is mutable
   ///so the container can store scope or singletons
   final Map<Type, Object> singletons;
+
+  // ignore: strict_raw_type, avoid_field_initializers_in_const_classes
+  final Map<Type, AsyncLock> locks;
 
   ///⌖ If true, this container is a scoped container. Scoped containers never
   ///create more than one instance of a service
@@ -137,6 +143,8 @@ class IocContainerBuilder {
           _serviceDefinitionsByType,
         ),
         <Type, Object>{},
+        // ignore: strict_raw_type
+        <Type, AsyncLock>{},
       );
 
   ///Add a singleton service to the container.
@@ -196,12 +204,11 @@ class IocContainerBuilder {
       IocContainer container,
     ) factory,
   ) {
-    addSingleton((container) => AsyncLock<T>(() async => factory(container)));
-
     addServiceDefinition<Future<T>>(
       ServiceDefinition<Future<T>>(
         isSingleton: true,
-        (container) async => container<AsyncLock<T>>().execute(),
+        (container) async =>
+            (container.locks[AsyncLock]! as AsyncLock<T>).execute(),
       ),
     );
   }
@@ -255,6 +262,7 @@ extension IocContainerExtensions on IocContainer {
       IocContainer(
         serviceDefinitionsByType,
         useExistingSingletons ? Map<Type, Object>.from(singletons) : {},
+        {},
         isScoped: true,
       );
 
@@ -278,7 +286,12 @@ extension IocContainerExtensions on IocContainer {
         return singletonValue as Future<T>;
       }
 
-      final lock = get<AsyncLock<T>>();
+      if (!locks.containsKey(T)) {
+        locks[T] =
+            AsyncLock<T>(() => serviceDefinition.factory(this) as Future<T>);
+      }
+
+      final lock = locks[T]! as AsyncLock<T>;
 
       // ignore: unawaited_futures
       final future = lock.execute();

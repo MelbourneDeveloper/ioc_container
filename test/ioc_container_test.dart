@@ -13,6 +13,7 @@ class ImmutableContainer extends IocContainer {
   }) : super(
           serviceDefinitionsByType,
           Map<Type, Object>.unmodifiable(singletons),
+          {},
           isScoped: isScoped,
         );
 }

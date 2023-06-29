@@ -6,7 +6,7 @@ class AsyncLock<T> {
   AsyncLock(this.function, {this.retainFutureErrors = false});
 
   /// The function to execute.
-  final FutureOr<T> Function() function;
+  final Future<T> Function() function;
 
   Completer<T>? _completer;
 

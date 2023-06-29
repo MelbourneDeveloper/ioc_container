@@ -9,7 +9,6 @@ environment:
 dev_dependencies:
   austerity:
     path: ../austerity
-  dart_code_metrics: ^4.20.0
   lints: ^2.0.0
   meta: ^1.7.0
   test: ^1.16.0

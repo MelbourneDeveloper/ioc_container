@@ -203,25 +203,13 @@ class IocContainerBuilder {
     Future<T> Function(
       IocContainer container,
     ) factory,
-  ) {
-    addServiceDefinition<Future<T>>(
-      ServiceDefinition<Future<T>>(
-        isSingleton: true,
-        (container) async {
-          //TODO: This is a bit wet
-          if (!container.locks.containsKey(T)) {
-            container.locks[T] = AsyncLock<T>(
-              () => factory(container),
-            );
-          }
-
-          final lock = container.locks[T]! as AsyncLock<T>;
-
-          return lock.execute();
-        },
-      ),
-    );
-  }
+  ) =>
+      addServiceDefinition<Future<T>>(
+        ServiceDefinition<Future<T>>(
+          isSingleton: true,
+          (container) async => factory(container),
+        ),
+      );
 }
 
 ///Extensions for IocContainer
@@ -306,7 +294,7 @@ extension IocContainerExtensions on IocContainer {
       final future = lock.execute();
 
       await future;
-
+      
       singletons[Future<T>] = future;
 
       return future;

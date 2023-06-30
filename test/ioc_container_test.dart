@@ -447,9 +447,6 @@ void main() {
           () {
             futureCounter++;
 
-            // ignore: avoid_print
-            print('returning');
-
             return A('a');
           },
         ),
@@ -534,11 +531,7 @@ void main() {
 
     final builder = IocContainerBuilder()
       ..addSingletonAsync(
-        (c) async {
-          // ignore: avoid_print
-          print('ding');
-          return throwException ? throw Exception() : A('a');
-        },
+        (c) async => throwException ? throw Exception() : A('a'),
       );
 
     final container = builder.toContainer();

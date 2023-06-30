@@ -16,13 +16,13 @@ class AsyncLock<T> {
 
   /// Executes the given [function] and returns the value, but ensures that
   /// only one async function executes at a time.
-  Future<T> execute() async => _completer?.future ?? _executeFunction(function);
-
-  /// Creates a new [Completer], executes the given [function] and
-  /// returns the value.
-  Future<T> _executeFunction(FutureOr<T> Function() function) async {
-    _completer = Completer<T>();
+  Future<T> execute() async {
     try {
+      if (_completer != null) {
+        return _completer!.future;
+      } else {
+        _completer = Completer<T>();
+      }
       final result = await function();
       _completer!.complete(result);
       return result;

@@ -447,6 +447,9 @@ void main() {
           () {
             futureCounter++;
 
+            // ignore: avoid_print
+            print('returning');
+
             return A('a');
           },
         ),

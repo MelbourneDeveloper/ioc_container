@@ -208,7 +208,6 @@ class IocContainerBuilder {
       ServiceDefinition<Future<T>>(
         isSingleton: true,
         (container) async {
-
           //TODO: This is a bit wet
           if (!container.locks.containsKey(T)) {
             container.locks[T] = AsyncLock<T>(
@@ -304,13 +303,11 @@ extension IocContainerExtensions on IocContainer {
 
       final lock = locks[T]! as AsyncLock<T>;
 
-      // ignore: unawaited_futures
       final future = lock.execute();
 
-      // ignore: unawaited_futures
-      future.then((_) {
-        singletons[Future<T>] = future;
-      });
+      await future;
+
+      singletons[Future<T>] = future;
 
       return future;
     }

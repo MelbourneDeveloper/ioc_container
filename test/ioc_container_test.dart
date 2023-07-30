@@ -682,25 +682,6 @@ void main() {
     );
   });
 
-  // test('Test initSafe', () async {
-  //   final builder = IocContainerBuilder()
-  //     ..addSingletonAsync(
-  //       (c) async => A('a'),
-  //     );
-
-  //   final container = builder.toContainer();
-
-  //   final a = await container.getAsync<A>();
-
-  //   expect(
-  //     identical(
-  //       a,
-  //       await container.getAsync<A>(),
-  //     ),
-  //     true,
-  //   );
-  // });
-
   test('Test Async Transient', () async {
     var futureCounter = 0;
 

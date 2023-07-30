@@ -536,6 +536,43 @@ void main() {
 
     final container = builder.toContainer();
 
+    //This causes a deadlock. The question is whether
+    //the deadlock is acceptable or not, because we're not awaiting
+    //the exception to be handled correctly.
+    expect(() async => container.getAsync<A>(), throwsException);
+
+    //We should not have stored the bad future
+    expect(container.singletons.containsKey(Future<A>), false);
+
+    //The lock was removed
+    expect(container.locks.containsKey(Future<A>), false);
+
+    throwException = false;
+
+    //We can recover
+    final a = await container.getAsync<A>();
+
+    expect(
+      identical(
+        a,
+        await container.getAsync<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test initSafe - Recover From Error 2', () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingletonAsync(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    //This achieves a similar thing to throwsException, which doesn't currently
+    //work
     var threwError = false;
     try {
       await container.getAsync<A>();
@@ -545,10 +582,11 @@ void main() {
     }
     expect(threwError, true);
 
-    // expect(() async => container.getAsync<A>(), throwsException);
-
     //We should not have stored the bad future
     expect(container.singletons.containsKey(Future<A>), false);
+
+    //The lock was removed
+    expect(container.locks.containsKey(Future<A>), false);
 
     throwException = false;
 

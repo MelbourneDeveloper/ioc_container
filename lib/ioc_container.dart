@@ -291,13 +291,21 @@ extension IocContainerExtensions on IocContainer {
 
       final lock = locks[T]! as AsyncLock<T>;
 
-      final future = lock.execute();
+      try {
+        final future = lock.execute();
 
-      await future;
-      
-      singletons[Future<T>] = future;
+        await future;
 
-      return future;
+        singletons[Future<T>] = future;
+
+        return future;
+      }
+      // ignore: avoid_catches_without_on_clauses
+      catch (ex)
+      {
+        locks.remove(T);
+        rethrow;
+      }
     }
 
     return serviceDefinition.factory(this) as Future<T>;

@@ -536,7 +536,16 @@ void main() {
 
     final container = builder.toContainer();
 
-    expect(() async => container.getAsync<A>(), throwsException);
+    var threwError = false;
+    try {
+      await container.getAsync<A>();
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e) {
+      threwError = true;
+    }
+    expect(threwError, true);
+
+    // expect(() async => container.getAsync<A>(), throwsException);
 
     //We should not have stored the bad future
     expect(container.singletons.containsKey(Future<A>), false);

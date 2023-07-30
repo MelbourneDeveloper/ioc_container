@@ -273,7 +273,7 @@ extension IocContainerExtensions on IocContainer {
 
     if (serviceDefinition == null) {
       throw ServiceNotFoundException<T>(
-        'Service $T fssfsdf not found',
+        'Service $T not found',
       );
     }
 
@@ -281,10 +281,12 @@ extension IocContainerExtensions on IocContainer {
       final singletonValue = singletons[Future<T>];
 
       if (singletonValue != null) {
+        //Return completed successful future
         return singletonValue as Future<T>;
       }
 
       if (!locks.containsKey(T)) {
+        //Add a lock
         locks[T] =
             AsyncLock<T>(() => serviceDefinition.factory(this) as Future<T>);
       }
@@ -292,19 +294,17 @@ extension IocContainerExtensions on IocContainer {
       final lock = locks[T]! as AsyncLock<T>;
 
       try {
+        //Await the locked call
         final future = lock.execute();
-
         await future;
 
+        //Store successful future
         singletons[Future<T>] = future;
 
         return future;
-      }
-      // ignore: avoid_catches_without_on_clauses
-      catch (ex)
-      {
+      } finally {
+        //Remove the lock
         locks.remove(T);
-        rethrow;
       }
     }
 

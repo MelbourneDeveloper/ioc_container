@@ -526,7 +526,7 @@ void main() {
     );
   });
 
-  test('Test initSafe - Recover From Error', () async {
+  test('Test initSafe - Deadlock times out', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()
@@ -536,10 +536,40 @@ void main() {
 
     final container = builder.toContainer();
 
-    //This causes a deadlock. The question is whether
-    //the deadlock is acceptable or not, because we're not awaiting
-    //the exception to be handled correctly.
+    //This causes a deadlock because the future is never completed, so cleanup
+    //never occurs
     expect(() async => container.getAsync<A>(), throwsException);
+
+    //We should not have stored the bad future
+    expect(container.singletons.containsKey(Future<A>), false);
+
+    throwException = false;
+
+    //We can recover
+    final a = await container.getAsync<A>();
+
+    expect(
+      identical(
+        a,
+        await container.getAsync<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test initSafe - Recover From Error expectLater', () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingletonAsync(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    //We use expect later here because it allows the future
+    //to complete, which results in cleanup
+    await expectLater(container.getAsync<A>(), throwsA(isA<Exception>()));
 
     //We should not have stored the bad future
     expect(container.singletons.containsKey(Future<A>), false);
@@ -561,7 +591,7 @@ void main() {
     );
   });
 
-  test('Test initSafe - Recover From Error 2', () async {
+  test('Test initSafe - Recover From Error Full Try/Catch', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()
@@ -571,8 +601,7 @@ void main() {
 
     final container = builder.toContainer();
 
-    //This achieves a similar thing to throwsException, which doesn't currently
-    //work
+    //This achieves the same thing as expectLater with a different approach
     var threwError = false;
     try {
       await container.getAsync<A>();

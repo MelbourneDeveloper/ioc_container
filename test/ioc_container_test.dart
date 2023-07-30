@@ -545,7 +545,7 @@ void main() {
     expect(container.singletons.containsKey(Future<A>), false);
 
     //The lock was removed
-    expect(container.locks.containsKey(Future<A>), false);
+    expect(container.locks.containsKey(A), false);
 
     throwException = false;
 
@@ -586,7 +586,7 @@ void main() {
     expect(container.singletons.containsKey(Future<A>), false);
 
     //The lock was removed
-    expect(container.locks.containsKey(Future<A>), false);
+    expect(container.locks.containsKey(A), false);
 
     throwException = false;
 

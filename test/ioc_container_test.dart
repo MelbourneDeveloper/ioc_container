@@ -526,7 +526,7 @@ void main() {
     );
   });
 
-  test('Test Time Out', () async {
+  test('Test Async Singleton Time Out', () async {
     var loop = true;
 
     final builder = IocContainerBuilder()
@@ -554,38 +554,53 @@ void main() {
     expect(a.name, 'a');
   });
 
-  // test('Test initSafe - Deadlock times out', () async {
-  //   var throwException = true;
+  test('Test Async Singleton Recovers From Error v1', () async {
+    var throwException = true;
 
-  //   final builder = IocContainerBuilder()
-  //     ..addSingletonAsync(
-  //       (c) async => throwException ? throw Exception() : A('a'),
-  //     );
+    final builder = IocContainerBuilder()
+      ..addSingletonAsync(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
 
-  //   final container = builder.toContainer();
+    final container = builder.toContainer();
 
-  //   //This causes a deadlock because the future is never completed, so cleanup
-  //   //never occurs
-  //   expect(() async => container.getAsync<A>(), throwsException);
+    //This would cause a deadlock if didn't wait for the future to clean up
+    //afterwards
+    final future = container.getAsync<A>();
+    expect(() async => future, throwsException);
 
-  //   //We should not have stored the bad future
-  //   expect(container.singletons.containsKey(Future<A>), false);
+    try {
+      //This allows cleanup, but this also causes the same effect as
+      //expectLater or awaiting the future in the try block
+      //All the versions are different flavors of the same time, and 
+      //perhaps there is no way to use expect with a future without
+      //causing a deadlock
+      await future;
+    }
+    // ignore: avoid_catches_without_on_clauses, empty_catches
+    catch (ex) {}
 
-  //   throwException = false;
+    //We should not have stored the bad future
+    expect(container.singletons.containsKey(Future<A>), false);
 
-  //   //We can recover
-  //   final a = await container.getAsync<A>();
+    //The lock was removed
+    expect(container.locks.containsKey(A), false);
 
-  //   expect(
-  //     identical(
-  //       a,
-  //       await container.getAsync<A>(),
-  //     ),
-  //     true,
-  //   );
-  // });
+    throwException = false;
 
-  test('Test initSafe - Recover From Error expectLater', () async {
+    //We can recover
+    final a = await container.getAsync<A>();
+
+    expect(
+      identical(
+        a,
+        await container.getAsync<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Async Singleton Recovers From Error v2 - expectLater', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()
@@ -619,7 +634,7 @@ void main() {
     );
   });
 
-  test('Test initSafe - Recover From Error Full Try/Catch', () async {
+  test('Test Async Singleton Recovers From Error v3 - Full Try/Catch', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()

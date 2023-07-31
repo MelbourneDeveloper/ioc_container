@@ -33,7 +33,7 @@ jobs:
         run: dart analyze lib --no-fatal-warnings
 
       - name: Check Formatting
-        run: flutter format lib --set-exit-if-changed
+        run: dart format lib --set-exit-if-changed
 
       - name: Run Tests
         run: flutter test --coverage --update-goldens

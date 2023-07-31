@@ -268,7 +268,9 @@ extension IocContainerExtensions on IocContainer {
   ///with [IocContainerBuilder.addAsync] or
   ///[IocContainerBuilder.addSingletonAsync]. You can only use this on factories
   ///that return a Future<>.
-  Future<T> getAsync<T>() async {
+  Future<T> getAsync<T>([
+    Duration? timeout = const Duration(minutes: 5),
+  ]) async {
     final serviceDefinition = serviceDefinitionsByType[Future<T>];
 
     if (serviceDefinition == null) {
@@ -295,7 +297,7 @@ extension IocContainerExtensions on IocContainer {
 
       try {
         //Await the locked call
-        final future = lock.execute();
+        final future = timeout != null ? lock.execute(timeout) : lock.execute();
         await future;
 
         //Store successful future

@@ -526,36 +526,64 @@ void main() {
     );
   });
 
-  test('Test initSafe - Deadlock times out', () async {
-    var throwException = true;
+  test('Test Time Out', () async {
+    var loop = true;
 
     final builder = IocContainerBuilder()
-      ..addSingletonAsync(
-        (c) async => throwException ? throw Exception() : A('a'),
+      ..addSingletonAsync<A>(
+        (c) async {
+          while (loop) {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+          }
+          return A('a');
+        },
       );
 
     final container = builder.toContainer();
 
-    //This causes a deadlock because the future is never completed, so cleanup
-    //never occurs
-    expect(() async => container.getAsync<A>(), throwsException);
+    final future1 = container.getAsync<A>(const Duration(milliseconds: 100));
+    final future2 = container.getAsync<A>(const Duration(milliseconds: 200));
 
-    //We should not have stored the bad future
-    expect(container.singletons.containsKey(Future<A>), false);
+    final combinedFutures = Future.wait([future1, future2]);
 
-    throwException = false;
+    await expectLater(combinedFutures, throwsA(isA<Exception>()));
 
-    //We can recover
+    loop = false;
+
     final a = await container.getAsync<A>();
-
-    expect(
-      identical(
-        a,
-        await container.getAsync<A>(),
-      ),
-      true,
-    );
+    expect(a.name, 'a');
   });
+
+  // test('Test initSafe - Deadlock times out', () async {
+  //   var throwException = true;
+
+  //   final builder = IocContainerBuilder()
+  //     ..addSingletonAsync(
+  //       (c) async => throwException ? throw Exception() : A('a'),
+  //     );
+
+  //   final container = builder.toContainer();
+
+  //   //This causes a deadlock because the future is never completed, so cleanup
+  //   //never occurs
+  //   expect(() async => container.getAsync<A>(), throwsException);
+
+  //   //We should not have stored the bad future
+  //   expect(container.singletons.containsKey(Future<A>), false);
+
+  //   throwException = false;
+
+  //   //We can recover
+  //   final a = await container.getAsync<A>();
+
+  //   expect(
+  //     identical(
+  //       a,
+  //       await container.getAsync<A>(),
+  //     ),
+  //     true,
+  //   );
+  // });
 
   test('Test initSafe - Recover From Error expectLater', () async {
     var throwException = true;

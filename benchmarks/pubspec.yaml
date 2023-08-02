@@ -1,6 +1,7 @@
 name: benchmarks
 description: A sample command-line application.
 version: 1.0.0
+publish_to: 'none'
 
 environment:
   sdk: ">=2.18.2 <3.0.0"
@@ -10,6 +11,8 @@ dependencies:
   benchmark_harness: any
   flutter_simple_dependency_injection: ^2.0.0
   get_it: ^7.2.0
+  ioc_container: 
+    path: ../
   meta: ^1.8.0
   riverpod: ^2.0.2
 

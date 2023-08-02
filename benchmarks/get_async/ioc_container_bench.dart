@@ -1,9 +1,11 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:ioc_container/ioc_container.dart';
 
 // ignore: avoid_relative_lib_imports
-import '../../lib/ioc_container.dart';
+
+
 import '../shared.dart';
 
 late final IocContainer instance;

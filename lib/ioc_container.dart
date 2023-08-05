@@ -62,7 +62,7 @@ class IocContainer {
   });
 
   ///📙 The service definitions by type
-  final Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType;
+  final Expando<ServiceDefinition<dynamic>> serviceDefinitionsByType;
 
   ///1️⃣ Map of singletons or scoped services by type. This map is mutable
   ///so the container can store scope or singletons
@@ -130,12 +130,16 @@ class IocContainerBuilder {
   }
 
   ///📦 Create an [IocContainer] from the [IocContainerBuilder].
-  IocContainer toContainer() => IocContainer(
-        Map<Type, ServiceDefinition<dynamic>>.unmodifiable(
-          _serviceDefinitionsByType,
-        ),
-        <Type, Object>{},
-      );
+  IocContainer toContainer() {
+    final container = IocContainer(
+      Expando<ServiceDefinition<dynamic>>(),
+      <Type, Object>{},
+    );
+    for (final entry in _serviceDefinitionsByType.entries) {
+      container.serviceDefinitionsByType[entry.key] = entry.value;
+    }
+    return container;
+  }
 
   ///Add a singleton service to the container.
   void addSingletonService<T>(T service) => addServiceDefinition(
@@ -150,8 +154,7 @@ class IocContainerBuilder {
   void addSingleton<T>(
     T Function(
       IocContainer container,
-    )
-        factory,
+    ) factory,
   ) =>
       addServiceDefinition<T>(
         ServiceDefinition<T>(
@@ -164,8 +167,7 @@ class IocContainerBuilder {
   void add<T>(
     T Function(
       IocContainer container,
-    )
-        factory, {
+    ) factory, {
     void Function(T service)? dispose,
   }) =>
       addServiceDefinition<T>(
@@ -179,8 +181,7 @@ class IocContainerBuilder {
   void addAsync<T>(
     Future<T> Function(
       IocContainer container,
-    )
-        factory, {
+    ) factory, {
     Future<void> Function(T service)? disposeAsync,
   }) =>
       addServiceDefinition<Future<T>>(
@@ -195,8 +196,7 @@ class IocContainerBuilder {
   void addSingletonAsync<T>(
     Future<T> Function(
       IocContainer container,
-    )
-        factory,
+    ) factory,
   ) =>
       addServiceDefinition<Future<T>>(
         ServiceDefinition<Future<T>>(
@@ -227,18 +227,18 @@ extension IocContainerExtensions on IocContainer {
 
   ///🏁 Initalizes and stores each singleton in case you want a zealous
   ///container instead of a lazy one
-  void initializeSingletons() {
-    serviceDefinitionsByType.forEach((type, serviceDefinition) {
-      if (serviceDefinition.isSingleton) {
-        singletons.putIfAbsent(
-          type,
-          () => serviceDefinition.factory(
-            this,
-          ) as Object,
-        );
-      }
-    });
-  }
+  // void initializeSingletons() {
+  //   serviceDefinitionsByType.forEach((type, serviceDefinition) {
+  //     if (serviceDefinition.isSingleton) {
+  //       singletons.putIfAbsent(
+  //         type,
+  //         () => serviceDefinition.factory(
+  //           this,
+  //         ) as Object,
+  //       );
+  //     }
+  //   });
+  // }
 
   ///⌖ Gets a service, but each service in the object mesh will have only one
   ///instance. If you want to get multiple scoped objects, call [scoped] to
@@ -297,8 +297,7 @@ extension IocContainerExtensions on IocContainer {
       Type type,
       ServiceDefinition<dynamic>? serviceDefinition,
       Object? singleton,
-    )?
-        mergeTest,
+    )? mergeTest,
   }) {
     for (final key in container.singletons.keys.where(
       mergeTest != null

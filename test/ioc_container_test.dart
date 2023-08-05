@@ -1,33 +1,33 @@
+
 import 'package:ioc_container/ioc_container.dart';
-import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 ///An immutable version of the container
-@immutable
-class ImmutableContainer extends IocContainer {
-  ///Creates an immutable version of the container
-  ImmutableContainer(
-    Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType,
-    Map<Type, Object> singletons, {
-    bool isScoped = false,
-  }) : super(
-          serviceDefinitionsByType,
-          Map<Type, Object>.unmodifiable(singletons),
-          isScoped: isScoped,
-        );
-}
+// @immutable
+// class ImmutableContainer extends IocContainer {
+//   ///Creates an immutable version of the container
+//   ImmutableContainer(
+//     Map<Type, ServiceDefinition<dynamic>> serviceDefinitionsByType,
+//     Map<Type, Object> singletons, {
+//     bool isScoped = false,
+//   }) : super(
+//           serviceDefinitionsByType,
+//           Map<Type, Object>.unmodifiable(singletons),
+//           isScoped: isScoped,
+//         );
+// }
 
-extension TestIocContainerExtensions on IocContainer {
-  ImmutableContainer toImmutable() {
-    initializeSingletons();
+// extension TestIocContainerExtensions on IocContainer {
+//   ImmutableContainer toImmutable() {
+//     initializeSingletons();
 
-    return ImmutableContainer(
-      serviceDefinitionsByType,
-      singletons,
-      isScoped: isScoped,
-    );
-  }
-}
+//     return ImmutableContainer(
+//       serviceDefinitionsByType,
+//       singletons,
+//       isScoped: isScoped,
+//     );
+//   }
+// }
 
 class A {
   A(this.name);
@@ -210,15 +210,15 @@ void main() {
     expect(a == aa, true);
   });
 
-  test('Test Singleton 3', () {
-    final builder = IocContainerBuilder()
-      ..addSingleton((c) => B(c.get<A>()))
-      ..addSingletonService(A('a'));
-    final container = builder.toContainer()..initializeSingletons();
-    expect(container.singletons[A], container.get<A>());
-    expect(container.singletons[B], container.get<B>());
-    expect(container.singletons.length, 2);
-  });
+  // test('Test Singleton 3', () {
+  //   final builder = IocContainerBuilder()
+  //     ..addSingleton((c) => B(c.get<A>()))
+  //     ..addSingletonService(A('a'));
+  //   final container = builder.toContainer()..initializeSingletons();
+  //   expect(container.singletons[A], container.get<A>());
+  //   expect(container.singletons[B], container.get<B>());
+  //   expect(container.singletons.length, 2);
+  // });
 
   test('Test Singleton 4', () {
     final builder = IocContainerBuilder()
@@ -261,33 +261,33 @@ void main() {
     expect(d.c.b.a.name, 'a');
   });
 
-  test('Test Immutability', () {
-    final builder = IocContainerBuilder()..addSingletonService(A('a'));
-    final container = builder.toContainer();
+  // test('Test Immutability', () {
+  //   final builder = IocContainerBuilder()..addSingletonService(A('a'));
+  //   final container = builder.toContainer();
 
-    expect(
-      () => container.serviceDefinitionsByType.addAll({
-        //ignore: implicit_dynamic_type
-        String: ServiceDefinition(
-          (c) => 'a',
-          isSingleton: true,
-        ),
-      }),
-      throwsUnsupportedError,
-    );
-    final container2 = builder.toContainer();
+  //   expect(
+  //     () => container.serviceDefinitionsByType.addAll({
+  //       //ignore: implicit_dynamic_type
+  //       String: ServiceDefinition(
+  //         (c) => 'a',
+  //         isSingleton: true,
+  //       ),
+  //     }),
+  //     throwsUnsupportedError,
+  //   );
+  //   final container2 = builder.toContainer();
 
-    expect(
-      () => container2.serviceDefinitionsByType.addAll({
-        //ignore: implicit_dynamic_type
-        String: ServiceDefinition(
-          (c) => 'a',
-          isSingleton: true,
-        ),
-      }),
-      throwsUnsupportedError,
-    );
-  });
+  //   expect(
+  //     () => container2.serviceDefinitionsByType.addAll({
+  //       //ignore: implicit_dynamic_type
+  //       String: ServiceDefinition(
+  //         (c) => 'a',
+  //         isSingleton: true,
+  //       ),
+  //     }),
+  //     throwsUnsupportedError,
+  //   );
+  // });
 
   test('Test Lazy', () {
     final builder = IocContainerBuilder()..addSingletonService(A('a'));
@@ -298,12 +298,23 @@ void main() {
     expect(container.singletons[A] == a, true);
   });
 
-  test('Test Zealous', () {
-    final builder = IocContainerBuilder()..addSingletonService(A('a'));
-    final container = builder.toContainer()..initializeSingletons();
-    expect(container.singletons.length, 1);
-    final a = container.get<A>();
-    expect(container.singletons[A] == a, true);
+  // test('Test Zealous', () {
+  //   final builder = IocContainerBuilder()..addSingletonService(A('a'));
+  //   final container = builder.toContainer()..initializeSingletons();
+  //   expect(container.singletons.length, 1);
+  //   final a = container.get<A>();
+  //   expect(container.singletons[A] == a, true);
+  // });
+
+  test('Expando', () {
+    final expando = Expando<Object>();
+    final a = A('test');
+    final b = B(a);
+    expando[B] = b;
+    expando[A] = a;
+    expect(identical(expando[B], b), true);
+    expect(identical(expando[A], a), true);
+    //expect(expando., true);
   });
 
   test('Test Is Lazy Before And After', () {
@@ -731,19 +742,19 @@ void main() {
     );
   });
 
-  test('Test Extending For Immutability', () {
-    final a = A('a');
-    final builder = IocContainerBuilder()..addSingletonService(a);
-    final immutableContainer = builder.toContainer().toImmutable();
+  // test('Test Extending For Immutability', () {
+  //   final a = A('a');
+  //   final builder = IocContainerBuilder()..addSingletonService(a);
+  //   final immutableContainer = builder.toContainer().toImmutable();
 
-    expect(immutableContainer.singletons.length, 1);
-    expect(immutableContainer.singletons[A], a);
+  //   expect(immutableContainer.singletons.length, 1);
+  //   expect(immutableContainer.singletons[A], a);
 
-    expect(
-      () => immutableContainer.singletons.addAll({B: B(A('a'))}),
-      throwsUnsupportedError,
-    );
-  });
+  //   expect(
+  //     () => immutableContainer.singletons.addAll({B: B(A('a'))}),
+  //     throwsUnsupportedError,
+  //   );
+  // });
 
   test('Test async and sync dispose Throws Exception', () {
     expect(

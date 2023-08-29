@@ -13,6 +13,7 @@ class ImmutableContainer extends IocContainer {
   }) : super(
           serviceDefinitionsByType,
           Map<Type, Object>.unmodifiable(singletons),
+          {},
           isScoped: isScoped,
         );
 }
@@ -328,6 +329,22 @@ void main() {
   test('Test Not Found', () {
     final container = IocContainerBuilder().toContainer();
     expect(
+      () async => container.getAsync<A>(),
+      throwsA(
+        predicate(
+          (exception) =>
+              exception is ServiceNotFoundException<A> &&
+              exception.message == 'Service A not found' &&
+              exception.toString() ==
+                  'ServiceNotFoundException: Service A not found',
+        ),
+      ),
+    );
+  });
+
+  test('Test Not Found Async', () async {
+    final container = IocContainerBuilder().toContainer();
+    await expectLater(
       () => container.get<A>(),
       throwsA(
         predicate(
@@ -439,7 +456,7 @@ void main() {
     var futureCounter = 0;
 
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) => Future<A>.delayed(
           //Simulate doing some async work
           const Duration(milliseconds: 10),
@@ -472,12 +489,12 @@ void main() {
 
   test('Test Async Singletons With Scope', () async {
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) => Future<A>(
           () => A('a'),
         ),
       )
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) => Future<B>(
           () async => B(await c.getAsync<A>()),
         ),
@@ -498,7 +515,7 @@ void main() {
     var throwException = true;
 
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) async => throwException ? throw Exception() : A('a'),
       );
 
@@ -525,24 +542,144 @@ void main() {
     );
   });
 
-  test('Test initSafe - Recover From Error', () async {
+  test('Test Async Singleton Time Out', () async {
+    var loop = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingletonAsync<A>(
+        (c) async {
+          while (loop) {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+          }
+          return A('a');
+        },
+      );
+
+    final container = builder.toContainer();
+
+    final future1 = container.getAsync<A>(const Duration(milliseconds: 100));
+    final future2 = container.getAsync<A>(const Duration(milliseconds: 200));
+
+    final combinedFutures = Future.wait([future1, future2]);
+
+    await expectLater(combinedFutures, throwsA(isA<Exception>()));
+
+    loop = false;
+
+    final a = await container.getAsync<A>();
+    expect(a.name, 'a');
+  });
+
+  test('Test Async Singleton Recovers From Error v1', () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) async => throwException ? throw Exception() : A('a'),
       );
 
     final container = builder.toContainer();
 
-    expect(() async => container.getAsyncSafe<A>(), throwsException);
+    //This would cause a deadlock if didn't wait for the future to clean up
+    //afterwards
+    final future = container.getAsync<A>();
+    expect(() async => future, throwsException);
+
+    try {
+      //This allows cleanup, but this also causes the same effect as
+      //expectLater or awaiting the future in the try block
+      //All the versions are different flavors of the same time, and
+      //perhaps there is no way to use expect with a future without
+      //causing a deadlock
+      await future;
+    }
+    // ignore: avoid_catches_without_on_clauses, empty_catches
+    catch (ex) {}
 
     //We should not have stored the bad future
-    expect(container.singletons.isEmpty, true);
+    expect(container.singletons.containsKey(Future<A>), false);
+
+    //The lock was removed
+    expect(container.locks.containsKey(A), false);
 
     throwException = false;
 
-    final a = await container.getAsyncSafe<A>();
+    //We can recover
+    final a = await container.getAsync<A>();
+
+    expect(
+      identical(
+        a,
+        await container.getAsync<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Async Singleton Recovers From Error v2 - expectLater', () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingletonAsync(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    //We use expect later here because it allows the future
+    //to complete, which results in cleanup
+    await expectLater(container.getAsync<A>(), throwsA(isA<Exception>()));
+
+    //We should not have stored the bad future
+    expect(container.singletons.containsKey(Future<A>), false);
+
+    //The lock was removed
+    expect(container.locks.containsKey(A), false);
+
+    throwException = false;
+
+    //We can recover
+    final a = await container.getAsync<A>();
+
+    expect(
+      identical(
+        a,
+        await container.getAsync<A>(),
+      ),
+      true,
+    );
+  });
+
+  test('Test Async Singleton Recovers From Error v3 - Full Try/Catch',
+      () async {
+    var throwException = true;
+
+    final builder = IocContainerBuilder()
+      ..addSingletonAsync(
+        (c) async => throwException ? throw Exception() : A('a'),
+      );
+
+    final container = builder.toContainer();
+
+    //This achieves the same thing as expectLater with a different approach
+    var threwError = false;
+    try {
+      await container.getAsync<A>();
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e) {
+      threwError = true;
+    }
+    expect(threwError, true);
+
+    //We should not have stored the bad future
+    expect(container.singletons.containsKey(Future<A>), false);
+
+    //The lock was removed
+    expect(container.locks.containsKey(A), false);
+
+    throwException = false;
+
+    final a = await container.getAsync<A>();
 
     expect(
       identical(
@@ -555,7 +692,7 @@ void main() {
 
   test('Test Merge Overwrite', () async {
     final builder = IocContainerBuilder()
-      ..addSingleton(
+      ..addSingletonAsync(
         (c) async => A('a'),
       );
 
@@ -612,7 +749,7 @@ void main() {
 
   test('Test Merge - Scope Non Singleton Scope Not Merged', () async {
     final builder = IocContainerBuilder()
-      ..add(
+      ..addAsync(
         (c) async => A('a'),
       );
 
@@ -631,25 +768,6 @@ void main() {
         await container.getAsync<A>(),
       ),
       false,
-    );
-  });
-
-  test('Test initSafe', () async {
-    final builder = IocContainerBuilder()
-      ..addSingleton(
-        (c) async => A('a'),
-      );
-
-    final container = builder.toContainer();
-
-    final a = await container.getAsyncSafe<A>();
-
-    expect(
-      identical(
-        a,
-        await container.getAsync<A>(),
-      ),
-      true,
     );
   });
 

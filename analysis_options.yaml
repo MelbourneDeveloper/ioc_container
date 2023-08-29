@@ -1,37 +1,3 @@
 include: package:austerity/analysis_options.yaml
 
-dart_code_metrics:
-  anti-patterns:
-    - long-method:
-        severity: error
-    - long-parameter-list:
-        severity: error
-  metrics:
-    cyclomatic-complexity: 20
-    maximum-nesting-level: 5
-    number-of-parameters: 4
-    source-lines-of-code: 50
-    weight-of-class: 0.33
-    halstead-volume: 150
-  metrics-exclude:
-  rules:
-    - newline-before-return:
-        severity: error
-    - no-boolean-literal-compare:
-        severity: error
-    - no-empty-block:
-        severity: error
-    - prefer-trailing-comma:
-        severity: error
-    - prefer-conditional-expressions:
-        severity: error
-    - no-equal-then-else:
-        severity: error
-    - avoid-restricted-imports:
-        severity: error
-    - avoid-global-state:
-        severity: error
-    - avoid-ignoring-return-values:
-        severity: warning
-    - avoid-late-keyword:
-        severity: error
+

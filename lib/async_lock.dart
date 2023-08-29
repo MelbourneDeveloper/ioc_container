@@ -44,11 +44,15 @@ class AsyncLock<T> {
       return result;
       // ignore: avoid_catches_without_on_clauses
     } catch (error, stackTrace) {
+      // coverage:ignore-start
+      //This is only here for some potential future use cases
       if (retainFutureErrors) {
         _completer!.completeError(error, stackTrace);
+        // coverage:ignore-end
       } else {
         _completer = null;
       }
+
       rethrow;
     }
   }

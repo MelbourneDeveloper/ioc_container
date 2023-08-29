@@ -329,6 +329,22 @@ void main() {
   test('Test Not Found', () {
     final container = IocContainerBuilder().toContainer();
     expect(
+      () async => container.getAsync<A>(),
+      throwsA(
+        predicate(
+          (exception) =>
+              exception is ServiceNotFoundException<A> &&
+              exception.message == 'Service A not found' &&
+              exception.toString() ==
+                  'ServiceNotFoundException: Service A not found',
+        ),
+      ),
+    );
+  });
+
+  test('Test Not Found Async', () async {
+    final container = IocContainerBuilder().toContainer();
+    await expectLater(
       () => container.get<A>(),
       throwsA(
         predicate(
@@ -572,7 +588,7 @@ void main() {
     try {
       //This allows cleanup, but this also causes the same effect as
       //expectLater or awaiting the future in the try block
-      //All the versions are different flavors of the same time, and 
+      //All the versions are different flavors of the same time, and
       //perhaps there is no way to use expect with a future without
       //causing a deadlock
       await future;
@@ -634,7 +650,8 @@ void main() {
     );
   });
 
-  test('Test Async Singleton Recovers From Error v3 - Full Try/Catch', () async {
+  test('Test Async Singleton Recovers From Error v3 - Full Try/Catch',
+      () async {
     var throwException = true;
 
     final builder = IocContainerBuilder()

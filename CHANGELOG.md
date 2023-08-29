@@ -68,3 +68,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Documentation changes and add icon
 ## 1.0.12
 - Fix icon link
+## 2.0.0-beta
+- Async locking. See documentation

@@ -1,6 +1,8 @@
 # ioc_container
 A lightweight, flexible, and high-performance dependency injection and service location library for Dart and Flutter.
 
+Version 2 of the library introduces the groundbreaking [async locking](#v2-and-async-locking) feature for singletons, a feature that's set to revolutionize the way you handle asynchronous initialization in Dart and Flutter! ioc_container is the only known container that offers this feature.
+
 ![ioc_container](https://github.com/MelbourneDeveloper/ioc_container/raw/main/images/ioc_container-256x256.png)
 
 ![example workflow](https://github.com/MelbourneDeveloper/ioc_container/actions/workflows/build_and_test.yml/badge.svg)
@@ -13,6 +15,8 @@ A lightweight, flexible, and high-performance dependency injection and service l
 
 [Dependency Injection](#dependency-injection-di)
 
+[Version 2 and Async Locking](#v2-and-async-locking)
+
 [Why Use This Library?](#why-use-this-library)
 
 [Performance And Simplicity](#performance-and-simplicity)
@@ -24,8 +28,6 @@ A lightweight, flexible, and high-performance dependency injection and service l
 [Flutter](#flutter)
 
 [Scoping and Disposal](#scoping-and-disposal)
-
-[Async Initialization](#async-initialization)
 
 [Testing](#testing)
 
@@ -40,6 +42,71 @@ Containers and service locators give you an easy way to lazily create the depend
 ## Dependency Injection (DI)
 [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. This is great for testing, and it makes your code more flexible. You can use test doubles in your tests, so they run quickly and reliably.
 
+## V2 and Async Locking
+
+Imagine a scenario where you need to initialize a service, like Firebase, connect to a database, or perhaps fetch some initial configuration data. These operations are asynchronous, and in a complex app, there's always a risk of inadvertently initializing the service multiple times, leading to redundant operations, wasted resources, and potential bugs.
+
+Enter async locking: With this feature, you can perform your async initialization with the confidence that it will only ever run once. No matter how many times you request the service, the initialization logic is executed just a single time. This is not just about efficiency; it's about ensuring the consistency and reliability of your services.
+
+Version 2 brings this powerful new feature. This is perfect for initializing Firebase, connecting to a database, or any other async initialization work. You can initialize anywhere in your code and not worry that it might happen again. Furthermore, the singleton never gets added to the container until the initialization completes successfully. This means that you can retry as many times as necessary without the container holding on to a service in an invalid state.
+
+Notice that this example calls the initialization method three times. However, it doesn't run the work three times. It only runs once. The first call to `getAsync()` starts the initialization work. The second and third calls to `getAsync()` wait for the initialization to complete. 
+
+```Dart
+import 'dart:async';
+import 'package:ioc_container/ioc_container.dart';
+
+class ConfigurationService {
+  Map<String, String>? _configData;
+  int initCount = 0;
+
+  Future<void> initialize() async {
+    print('Fetching configuration data from remote server...');
+    // Simulate network delay
+    await Future<void>.delayed(const Duration(seconds: 2));
+    _configData = {
+      'apiEndpoint': 'https://api.example.com',
+      'apiKey': '1234567890',
+    };
+    print('Configuration data fetched!');
+    initCount++;
+  }
+
+  String get apiEndpoint => _configData!['apiEndpoint']!;
+  String get apiKey => _configData!['apiKey']!;
+}
+
+void main() async {
+  final builder = IocContainerBuilder()
+    ..addSingletonAsync((container) async {
+      final service = ConfigurationService();
+      await service.initialize();
+      return service;
+    });
+
+  final container = builder.toContainer();
+  final stopwatch = Stopwatch()..start();
+  // Multiple parts of the application trying to initialize the service
+  // simultaneously
+  final services = await Future.wait([
+    container.getAsync<ConfigurationService>(),
+    container.getAsync<ConfigurationService>(),
+    container.getAsync<ConfigurationService>(),
+  ]);
+
+  stopwatch.stop();
+
+  print('API Endpoint: ${services.first.apiEndpoint}');
+  print('API Key: ${services.first.apiKey}');
+  print('Milliseconds spent: ${stopwatch.elapsedMilliseconds}');
+  print('Init Count: ${services.first.initCount}');
+}
+```
+
+You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
+
+Check out the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
+
 ## Why Use This Library?
 This library makes it easy to
 - Easily replace services with mocks for testing
@@ -51,7 +118,7 @@ This library makes it easy to
 - It's standard. It aims at being a standard dependency injector so anyone who understands DI can use this library.
 
 ### Performance and Simplicity
-This library is objectively fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. 
+This library is objectively fast and holds up to comparable libraries in terms of performance. These [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) are currently out of data for v2 beta but new benchmarks and performance options are coming. 
 
 The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. According to [codecov](https://app.codecov.io/gh/melbournedeveloper/ioc_container), it weighs in at 81 lines of code, which makes it the lightest container I know about. It is stable and has 100% test coverage. At least three apps in the stores use this library in production.
 
@@ -75,7 +142,7 @@ This will add a line like this to your package's `pubspec.yaml` (and run an impl
 
 ```yaml
 dependencies:
-  ioc_container: ^1.0.9 ## Or, latest version
+  ioc_container: ^2.0.0-beta ## Or, latest version
 ```
 
 ## Getting Started
@@ -116,8 +183,11 @@ void main() {
   final builder = IocContainerBuilder()
     //The app only has one AuthenticationService for the lifespan of the app (Singleton)
     ..addSingletonService(AuthenticationService())
-    //We mint a new UserService/ProductService for each usage
-    ..add((container) => UserService(container<AuthenticationService>()))
+    //We create a new UserService/ProductService for each usage
+    ..add((container) => UserService(
+      //This is shorthand for container.get<AuthenticationService>()
+      container<AuthenticationService>()
+      ))
     ..add((container) => ProductService());
 
   // Build the container
@@ -295,13 +365,6 @@ This example above defines a `DatabaseConnection` class that represents a connec
 The main function creates a scope to retrieve the `UserRepository` from the scoped container.  We fetch the user data and then dispose of the scope. Disposing of the scope will invoke the `dispose()` function for `UserRepository`, which in turn closes the DatabaseConnection.
 
 *Note: all services in the scoped container exist for the lifespan of the scope. They act in a way that is similar to singletons, but when we call `dispose()` on the scope, it calls `dispose()` on each service registration.*
-
-## Async Initialization
-You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
-
-_Warning: if you get a singleton with `getAsync()` and the call fails, the singleton will always return a `Future` with an error for the lifespan of the container._ You may need to take extra precautions by wrapping the initialization in a try/catch and using a retry. You may need to eventually cancel the operation if retrying fails. For this reason, you should probably scope the container and only use the result in your main container once it succeeds.
-
-Check out the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
 
 ```dart
 import 'package:ioc_container/ioc_container.dart';
@@ -550,6 +613,8 @@ extension FlutterFireExtensions on IocContainerBuilder {
     //These factories are all async because we need to ensure that Firebase is initialized
     addSingletonAsync(
       (container) {
+        //This is typically done  at the start of the main() function.  
+        //Be aware that this is being done to ensure that the Flutter engine is initialized before Firebase and never occurs twice
         WidgetsFlutterBinding.ensureInitialized();
 
         return Firebase.initializeApp(

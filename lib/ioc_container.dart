@@ -73,7 +73,9 @@ class IocContainer {
   ///so the container can store scope or singletons
   final Map<Type, Object> singletons;
 
-  // ignore: strict_raw_type, avoid_field_initializers_in_const_classes
+  ///🔒 Map of locks by type. This ensures that no async singletons execute
+  ///more than once, unless there is an error
+  // ignore: strict_raw_type
   final Map<Type, AsyncLock> locks;
 
   ///⌖ If true, this container is a scoped container. Scoped containers never

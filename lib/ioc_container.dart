@@ -73,7 +73,7 @@ class IocContainer {
   ///so the container can store scope or singletons
   final Map<Type, Object> singletons;
 
-  ///🔒 Map of locks by type. This ensures that no async singletons execute 
+  ///🔒 Map of locks by type. This ensures that no async singletons execute
   ///more than once, unless there is an error
   // ignore: strict_raw_type
   final Map<Type, AsyncLock> locks;

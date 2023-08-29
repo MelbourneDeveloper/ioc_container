@@ -1,6 +1,8 @@
 # ioc_container
 A lightweight, flexible, and high-performance dependency injection and service location library for Dart and Flutter.
 
+Check out the new feature, async locking in [Version 2](#v2-and -async-locking), just released!
+
 ![ioc_container](https://github.com/MelbourneDeveloper/ioc_container/raw/main/images/ioc_container-256x256.png)
 
 ![example workflow](https://github.com/MelbourneDeveloper/ioc_container/actions/workflows/build_and_test.yml/badge.svg)
@@ -12,6 +14,8 @@ A lightweight, flexible, and high-performance dependency injection and service l
 [Introduction](#introduction)
 
 [Dependency Injection](#dependency-injection-di)
+
+[Version 2 and Async Locking](#v2-and-async-locking)
 
 [Why Use This Library?](#why-use-this-library)
 
@@ -25,8 +29,6 @@ A lightweight, flexible, and high-performance dependency injection and service l
 
 [Scoping and Disposal](#scoping-and-disposal)
 
-[Async Initialization](#async-initialization)
-
 [Testing](#testing)
 
 [Add Firebase](#add-firebase)
@@ -39,6 +41,16 @@ Containers and service locators give you an easy way to lazily create the depend
 
 ## Dependency Injection (DI)
 [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) (DI) allows you to decouple concrete classes from the rest of your application. Your code can depend on abstractions instead of concrete classes. It allows you to easily swap out implementations without changing your code. This is great for testing, and it makes your code more flexible. You can use test doubles in your tests, so they run quickly and reliably.
+
+## V2 and Async Locking
+
+Version 2 brings the powerful new async locking feature for singletons. This allows you to perform async initialization work that comes with a guarantee that it will only run once. This is perfect for initializing Firebase, connecting to a database, or any other async initialization work. You can initialize anywhere in your code and not worry that it might happen again. Furthermore, the singleton never gets added to the container until the initialization completes successfully. This means that you can retry as many times as necessary without the container holding on to a service in an invalid state.
+
+You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
+
+_Warning: if you get a singleton with `getAsync()` and the call fails, the singleton will always return a `Future` with an error for the lifespan of the container._ You may need to take extra precautions by wrapping the initialization in a try/catch and using a retry. You may need to eventually cancel the operation if retrying fails. For this reason, you should probably scope the container and only use the result in your main container once it succeeds.
+
+Check out the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
 
 ## Why Use This Library?
 This library makes it easy to
@@ -295,13 +307,6 @@ This example above defines a `DatabaseConnection` class that represents a connec
 The main function creates a scope to retrieve the `UserRepository` from the scoped container.  We fetch the user data and then dispose of the scope. Disposing of the scope will invoke the `dispose()` function for `UserRepository`, which in turn closes the DatabaseConnection.
 
 *Note: all services in the scoped container exist for the lifespan of the scope. They act in a way that is similar to singletons, but when we call `dispose()` on the scope, it calls `dispose()` on each service registration.*
-
-## Async Initialization
-You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
-
-_Warning: if you get a singleton with `getAsync()` and the call fails, the singleton will always return a `Future` with an error for the lifespan of the container._ You may need to take extra precautions by wrapping the initialization in a try/catch and using a retry. You may need to eventually cancel the operation if retrying fails. For this reason, you should probably scope the container and only use the result in your main container once it succeeds.
-
-Check out the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
 
 ```dart
 import 'package:ioc_container/ioc_container.dart';

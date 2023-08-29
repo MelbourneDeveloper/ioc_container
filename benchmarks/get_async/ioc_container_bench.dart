@@ -5,7 +5,6 @@ import 'package:ioc_container/ioc_container.dart';
 
 // ignore: avoid_relative_lib_imports
 
-
 import '../shared.dart';
 
 late final IocContainer instance;

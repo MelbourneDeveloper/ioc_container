@@ -1,7 +1,7 @@
 # ioc_container
 A lightweight, flexible, and high-performance dependency injection and service location library for Dart and Flutter.
 
-Check out the new feature, async locking in [Version 2](#v2-and -async-locking), just released!
+Check out the new feature, async locking in [Version 2](#v2-and-async-locking), just released!
 
 ![ioc_container](https://github.com/MelbourneDeveloper/ioc_container/raw/main/images/ioc_container-256x256.png)
 
@@ -48,8 +48,6 @@ Version 2 brings the powerful new async locking feature for singletons. This all
 
 You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
 
-_Warning: if you get a singleton with `getAsync()` and the call fails, the singleton will always return a `Future` with an error for the lifespan of the container._ You may need to take extra precautions by wrapping the initialization in a try/catch and using a retry. You may need to eventually cancel the operation if retrying fails. For this reason, you should probably scope the container and only use the result in your main container once it succeeds.
-
 Check out the [retry package](https://pub.dev/packages/retry) to add resiliency to your app. Check out the [Flutter example](https://github.com/MelbourneDeveloper/ioc_container/blob/f92bb3bd03fb3e3139211d0a8ec2474a737d7463/example/lib/main.dart#L74) that displays a progress indicator until the initialization completes successfully.
 
 ## Why Use This Library?
@@ -63,7 +61,7 @@ This library makes it easy to
 - It's standard. It aims at being a standard dependency injector so anyone who understands DI can use this library.
 
 ### Performance and Simplicity
-This library is objectively fast and holds up to comparable libraries in terms of performance. See the [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) project and results. 
+This library is objectively fast and holds up to comparable libraries in terms of performance. These [benchmarks](https://github.com/MelbourneDeveloper/ioc_container/tree/main/benchmarks) are currently out of data for v2 beta but new benchmarks and performance options are coming. 
 
 The [source code](https://github.com/MelbourneDeveloper/ioc_container/blob/main/lib/ioc_container.dart) is a fraction of the size of similar libraries and has no dependencies. According to [codecov](https://app.codecov.io/gh/melbournedeveloper/ioc_container), it weighs in at 81 lines of code, which makes it the lightest container I know about. It is stable and has 100% test coverage. At least three apps in the stores use this library in production.
 
@@ -87,7 +85,7 @@ This will add a line like this to your package's `pubspec.yaml` (and run an impl
 
 ```yaml
 dependencies:
-  ioc_container: ^1.0.9 ## Or, latest version
+  ioc_container: ^2.0.0-beta ## Or, latest version
 ```
 
 ## Getting Started
@@ -128,8 +126,11 @@ void main() {
   final builder = IocContainerBuilder()
     //The app only has one AuthenticationService for the lifespan of the app (Singleton)
     ..addSingletonService(AuthenticationService())
-    //We mint a new UserService/ProductService for each usage
-    ..add((container) => UserService(container<AuthenticationService>()))
+    //We create a new UserService/ProductService for each usage
+    ..add((container) => UserService(
+      //This is shorthand for container.get<AuthenticationService>()
+      container<AuthenticationService>()
+      ))
     ..add((container) => ProductService());
 
   // Build the container

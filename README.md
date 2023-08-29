@@ -1,7 +1,7 @@
 # ioc_container
 A lightweight, flexible, and high-performance dependency injection and service location library for Dart and Flutter.
 
-Check out the new feature, async locking in [Version 2](#v2-and-async-locking), just released!
+Version 2 of the library introduces the groundbreaking [async locking](#v2-and-async-locking) feature for singletons, a feature that's set to revolutionize the way you handle asynchronous initialization in Dart and Flutter! ioc_container is the only known container that offers this feature.
 
 ![ioc_container](https://github.com/MelbourneDeveloper/ioc_container/raw/main/images/ioc_container-256x256.png)
 
@@ -44,7 +44,64 @@ Containers and service locators give you an easy way to lazily create the depend
 
 ## V2 and Async Locking
 
-Version 2 brings the powerful new async locking feature for singletons. This allows you to perform async initialization work that comes with a guarantee that it will only run once. This is perfect for initializing Firebase, connecting to a database, or any other async initialization work. You can initialize anywhere in your code and not worry that it might happen again. Furthermore, the singleton never gets added to the container until the initialization completes successfully. This means that you can retry as many times as necessary without the container holding on to a service in an invalid state.
+Imagine a scenario where you need to initialize a service, like Firebase, connect to a database, or perhaps fetch some initial configuration data. These operations are asynchronous, and in a complex app, there's always a risk of inadvertently initializing the service multiple times, leading to redundant operations, wasted resources, and potential bugs.
+
+Enter async locking: With this feature, you can perform your async initialization with the confidence that it will only ever run once. No matter how many times you request the service, the initialization logic is executed just a single time. This is not just about efficiency; it's about ensuring the consistency and reliability of your services.
+
+Version 2 brings this powerful new feature. This is perfect for initializing Firebase, connecting to a database, or any other async initialization work. You can initialize anywhere in your code and not worry that it might happen again. Furthermore, the singleton never gets added to the container until the initialization completes successfully. This means that you can retry as many times as necessary without the container holding on to a service in an invalid state.
+
+Notice that this example calls the initialization method three times. However, it doesn't run the work three times. It only runs once. The first call to `getAsync()` starts the initialization work. The second and third calls to `getAsync()` wait for the initialization to complete. 
+
+```Dart
+import 'dart:async';
+import 'package:ioc_container/ioc_container.dart';
+
+class ConfigurationService {
+  Map<String, String>? _configData;
+  int initCount = 0;
+
+  Future<void> initialize() async {
+    print('Fetching configuration data from remote server...');
+    // Simulate network delay
+    await Future<void>.delayed(const Duration(seconds: 2));
+    _configData = {
+      'apiEndpoint': 'https://api.example.com',
+      'apiKey': '1234567890',
+    };
+    print('Configuration data fetched!');
+    initCount++;
+  }
+
+  String get apiEndpoint => _configData!['apiEndpoint']!;
+  String get apiKey => _configData!['apiKey']!;
+}
+
+void main() async {
+  final builder = IocContainerBuilder()
+    ..addSingletonAsync((container) async {
+      final service = ConfigurationService();
+      await service.initialize();
+      return service;
+    });
+
+  final container = builder.toContainer();
+  final stopwatch = Stopwatch()..start();
+  // Multiple parts of the application trying to initialize the service
+  // simultaneously
+  final services = await Future.wait([
+    container.getAsync<ConfigurationService>(),
+    container.getAsync<ConfigurationService>(),
+    container.getAsync<ConfigurationService>(),
+  ]);
+
+  stopwatch.stop();
+
+  print('API Endpoint: ${services.first.apiEndpoint}');
+  print('API Key: ${services.first.apiKey}');
+  print('Milliseconds spent: ${stopwatch.elapsedMilliseconds}');
+  print('Init Count: ${services.first.initCount}');
+}
+```
 
 You can do initialization work when instantiating an instance of your service. Use `addAsync()` or `addSingletonAsync()` to register the services. When you need an instance, call the `getAsync()` method instead of `get()`. 
 
@@ -556,6 +613,8 @@ extension FlutterFireExtensions on IocContainerBuilder {
     //These factories are all async because we need to ensure that Firebase is initialized
     addSingletonAsync(
       (container) {
+        //This is typically done  at the start of the main() function.  
+        //Be aware that this is being done to ensure that the Flutter engine is initialized before Firebase and never occurs twice
         WidgetsFlutterBinding.ensureInitialized();
 
         return Firebase.initializeApp(

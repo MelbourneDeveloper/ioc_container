@@ -30,7 +30,7 @@ class ThemeNotifier extends ChangeNotifier {
 
 ///Configure the services
 final IocContainerBuilder builder = IocContainerBuilder(allowOverrides: true)
-  ..addSingletonService(SettingsService())
+  ..addSingleton((c) => SettingsService())
   ..addSingleton(
     (container) => ThemeNotifier(container<SettingsService>()),
   );

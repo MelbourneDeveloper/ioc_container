@@ -100,7 +100,7 @@ void main() {
   test('Basic Singleton 2', () {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingletonService(a)
+      ..addSingleton((c) => a)
       ..add((i) => B(a));
     final container = builder.toContainer();
     expect(container.get<B>().a, a);
@@ -109,7 +109,7 @@ void main() {
   test('Without Scoping', () {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingletonService(a)
+      ..addSingleton((c) => a)
       ..add((i) => B(i<A>()))
       ..add((i) => C(i<B>()))
       ..add((i) => D(i<B>(), i.get<C>()));
@@ -124,7 +124,7 @@ void main() {
   test('With Scoping', () {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingletonService(a)
+      ..addSingleton((c) => a)
       ..add((i) => B(i.get<A>()))
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
@@ -142,7 +142,7 @@ void main() {
   test('With Scoping 2', () {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingletonService(a)
+      ..addSingleton((c) => a)
       ..add((i) => B(i.get<A>()))
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
@@ -159,8 +159,8 @@ void main() {
   test('With Scoping And Disposing', () async {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingletonService<A>(
-        a,
+      ..addSingleton(
+        (c) => a, 
         dispose: (a) => a.dispose(),
       )
       ..add((i) => B(i.get<A>()))
@@ -190,7 +190,7 @@ void main() {
 
   test('Named Key Factory', () {
     final builder = IocContainerBuilder()
-      ..addSingletonService(AFactory())
+      ..addSingleton((container) => AFactory())
       ..add((container) => SomeService(container.get<AFactory>()));
 
     final container = builder.toContainer();
@@ -201,7 +201,7 @@ void main() {
 
   test('Test Singleton', () {
     final builder = IocContainerBuilder()
-      ..addSingletonService(A('a'))
+      ..addSingleton((c) => A('a'))
       ..add((cont) => B(cont.get<A>()));
     final container = builder.toContainer();
     final a = container.get<A>();
@@ -220,7 +220,7 @@ void main() {
   test('Test Singleton 3', () {
     final builder = IocContainerBuilder()
       ..addSingleton((c) => B(c.get<A>()))
-      ..addSingletonService(A('a'));
+      ..addSingleton((c) => A('a'));
     final container = builder.toContainer()..initializeSingletons();
     expect(container.singletons[A], container.get<A>());
     expect(container.singletons[B], container.get<B>());
@@ -239,8 +239,8 @@ void main() {
 
   test('Test Can Replace', () {
     final builder = IocContainerBuilder(allowOverrides: true)
-      ..addSingletonService(A('a'))
-      ..addSingletonService(A('b'));
+      ..addSingleton((c) => A('a'))
+      ..addSingleton((c) => A('b'));
     final container = builder.toContainer();
     final a = container.get<A>();
     expect(a.name, 'b');
@@ -249,8 +249,8 @@ void main() {
   test('Test Cant Replace', () {
     expect(
       () => IocContainerBuilder()
-        ..addSingletonService(A('a'))
-        ..addSingletonService(A('b')),
+        ..addSingleton((c) => A('a'))
+        ..addSingleton((c) => A('b')),
       throwsException,
     );
   });
@@ -258,7 +258,7 @@ void main() {
   test('Test Readme', () {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingletonService(a)
+      ..addSingleton((c) => a)
       ..add((i) => B(i.get<A>()))
       ..add((i) => C(i.get<B>()))
       ..add((i) => D(i.get<B>(), i.get<C>()));
@@ -269,7 +269,7 @@ void main() {
   });
 
   test('Test Immutability', () {
-    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final builder = IocContainerBuilder()..addSingleton((c) => A('a'));
     final container = builder.toContainer();
 
     expect(
@@ -297,7 +297,7 @@ void main() {
   });
 
   test('Test Lazy', () {
-    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final builder = IocContainerBuilder()..addSingleton((c) => A('a'));
     final container = builder.toContainer();
     expect(container.singletons.length, 0);
     final a = container.get<A>();
@@ -306,7 +306,7 @@ void main() {
   });
 
   test('Test Zealous', () {
-    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final builder = IocContainerBuilder()..addSingleton((c) => A('a'));
     final container = builder.toContainer()..initializeSingletons();
     expect(container.singletons.length, 1);
     final a = container.get<A>();
@@ -314,7 +314,7 @@ void main() {
   });
 
   test('Test Is Lazy Before And After', () {
-    final builder = IocContainerBuilder()..addSingletonService(A('a'));
+    final builder = IocContainerBuilder()..addSingleton((c) => A('a'));
     final container = builder.toContainer();
     expect(container.singletons.length, 0);
     final a = container.get<A>();
@@ -857,7 +857,7 @@ void main() {
 
   test('Test Extending For Immutability', () {
     final a = A('a');
-    final builder = IocContainerBuilder()..addSingletonService(a);
+    final builder = IocContainerBuilder()..addSingleton((c) => a);
     final immutableContainer = builder.toContainer().toImmutable();
 
     expect(immutableContainer.singletons.length, 1);

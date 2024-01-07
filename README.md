@@ -35,6 +35,8 @@ Version 2 of the library introduces the groundbreaking [async locking](#v2-and-a
 
 [Inspired By .NET](#inspired-by-net)
 
+[Extension Methods](#extension-methods)
+
 ## Introduction
 
 Containers and service locators give you an easy way to lazily create the dependencies that your app requires. As your app grows in complexity, you will find that static variables or global factories start to become cumbersome and error-prone. Containers give you a consistent approach to managing the lifespan of your dependencies and make it easy to replace services with mocks for testing. ioc_container embraces the [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection) pattern, and offers an approach that is standard across programming languages and frameworks. The implementation of this approach transcends Dart or Flutter. It is a proven and reliable method employed by developers across various technologies for well over a decade.
@@ -182,7 +184,7 @@ void main() {
   // Create a container builder and register your services
   final builder = IocContainerBuilder()
     //The app only has one AuthenticationService for the lifespan of the app (Singleton)
-    ..addSingletonService(AuthenticationService())
+    ..addSingleton((container) => AuthenticationService())
     //We create a new UserService/ProductService for each usage
     ..add((container) => UserService(
       //This is shorthand for container.get<AuthenticationService>()
@@ -205,7 +207,7 @@ void main() {
 }
 ```
 
-We define the services: `AuthenticationService`, `UserService`, and `ProductService`. Then, we create an `IocContainerBuilder` and register these services using [`addSingletonService()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingletonService.html) and [`add()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/add.html) methods. You can also use the [`addSingleton()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingleton.html) method to add singletons. Finally, we build the container and retrieve the services to use them in our application like this: `container<ProductService>()`.
+We define the services: `AuthenticationService`, `UserService`, and `ProductService`. Then, we create an `IocContainerBuilder` and register these services using [`addSingleton()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/addSingleton.html) and [`add()`](https://pub.dev/documentation/ioc_container/latest/ioc_container/IocContainerBuilder/add.html) methods. Finally, we build the container and retrieve the services to use them in our application like this: `container<ProductService>()`.
 
 ## Flutter
 You can use ioc_container as a service locator by declaring a global instance and using it anywhere. This is a good alternative to get_it. You can access it inside or outside the widget tree. Or, you can use the [flutter_ioc_container](https://pub.dev/packages/flutter_ioc_container) package to add your container to the widget tree as an [`InheritedWidget`](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html). This is a good alternative to Provider, which can get complicated when you need to manage the lifecycle of your services or replace services for testing. 
@@ -242,7 +244,7 @@ class InventoryService {
 
 // Create a builder so we can replace dependencies later
 final IocContainerBuilder builder = IocContainerBuilder(allowOverrides: true)
-  ..addSingletonService(NotificationService())
+  ..addSingleton((container) => NotificationService())
   ..add((container) => OrderService())
   ..addSingleton((container) => InventoryService());
 
@@ -693,3 +695,96 @@ If you have any further issues, see the [FlutterFire documentation](https://fire
 ## Inspired By .NET
 
 This library takes inspiration from DI in [.NET MAUI](https://learn.microsoft.com/en-us/dotnet/architecture/maui/dependency-injection) and [ASP .NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0). You register your dependencies with the `IocContainerBuilder` which is a bit like [`IServiceCollection`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection?view=dotnet-plat-ext-7.0) in ASP.NET Core. Then you build it with the `toContainer()` method, which is like the [`BuildServiceProvider()`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectioncontainerbuilderextensions.buildserviceprovider?view=dotnet-plat-ext-6.0) method in ASP.NET Core. DI is an established pattern on which the whole .NET ecosystem and many other ecosystems depend. This library does not reinvent the wheel, it just makes it easy to use in Flutter and Dart.
+
+## Extension Methods
+
+Much of the functionality comes from extension methods. Extension methods are better because they don't pollute the core public interface. It is very easy to implement your own `IocContainer` because it only has 4 properties. You can add as many extension methods as you need. The library doesn't come with extensions that are not necessary. 
+
+For example, in version V1, there was a `addSingletonService` extension. This was removed in V2 because it is not necessary, but you can easily add it back for backwards compatibility or convenience. This is the extension:
+
+```dart
+  ///Add a singleton service to the container.
+  void addSingletonService<T>(T service) => addServiceDefinition(
+        ServiceDefinition<T>(
+          (container) => service,
+          isSingleton: true,
+        ),
+      );
+```
+
+### Keyed Services
+
+You may need to use keys to store multiple instances of the same type. You can use extensions to implement this functionality. This example demonstrates how to use extensions to add keyed services to ioc_container
+
+```dart
+import 'package:ioc_container/ioc_container.dart';
+import 'package:test/test.dart';
+
+///Example service
+class BigService {
+  final String name;
+
+  BigService(this.name);
+  Future<void> callApi() => Future<void>.delayed(Duration(seconds: 1));
+
+  ///We can check equality by the name(key)
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is BigService && other.name == name;
+  }
+
+  @override
+  int get hashCode => name.hashCode;
+}
+
+///These give us the functionality to add or
+///access a service by key
+extension KeyedExtensions on IocContainer {
+  T? keyedService<T>(String key) => get<Map<String, T>>()[key];
+  void setServiceByKey<T>(String key, T service) =>
+      get<Map<String, T>>()[key] = service;
+}
+
+void main() {
+  test('Keyed Services', () {
+    var count = 0;
+
+    final builder = (IocContainerBuilder()
+      ..add((container) {
+        //Increments the name (key) of the service so they are unique
+        //Uuid would be better
+        count++;
+        var bigService = BigService(count.toString());
+        bigService;
+        container.setServiceByKey(count.toString(), bigService);
+        return bigService;
+      })
+      ..addSingleton(
+        (container) => <String, BigService>{},
+      ));
+
+    final container = builder.toContainer();
+
+    final bigContainerOne = container<BigService>();
+    final bigContainerTwo = container<BigService>();
+    final bigContainerThree = container<BigService>();
+
+    //Verifies the three names
+    expect(bigContainerOne.name, '1');
+    expect(bigContainerTwo.name, '2');
+    expect(bigContainerThree.name, '3');
+
+    //Verifies you can access these by key
+    expect(container.keyedService<BigService>(bigContainerOne.name),
+        bigContainerOne);
+
+    expect(container.keyedService<BigService>(bigContainerTwo.name),
+        bigContainerTwo);
+
+    expect(container.keyedService<BigService>(bigContainerThree.name),
+        bigContainerThree);
+  });
+}
+```

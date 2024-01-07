@@ -145,19 +145,6 @@ class IocContainerBuilder {
         <Type, AsyncLock>{},
       );
 
-  ///Add a singleton service to the container.
-  void addSingletonService<T>(
-    T service, {
-    void Function(T service)? dispose,
-  }) =>
-      addServiceDefinition(
-        ServiceDefinition<T>(
-          (container) => service,
-          isSingleton: true,
-          dispose: dispose,
-        ),
-      );
-
   ///1️⃣ Add a singleton factory to the container. The container
   ///will only call this once throughout the lifespan of the container
   void addSingleton<T>(

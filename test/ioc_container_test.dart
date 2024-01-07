@@ -159,8 +159,8 @@ void main() {
   test('With Scoping And Disposing', () async {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingleton(
-        (c) => a, 
+      ..addSingleton<A>(
+        (c) => a,
         dispose: (a) => a.dispose(),
       )
       ..add((i) => B(i.get<A>()))

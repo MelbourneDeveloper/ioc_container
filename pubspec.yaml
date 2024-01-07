@@ -1,6 +1,6 @@
 name: ioc_container
 description: A lightweight, flexible, and high-performance dependency injection and service location library for Dart and Flutter
-version: 2.0.0-beta
+version: 2.0.1-beta
 repository: https://github.com/MelbourneDeveloper/ioc_container
 
 environment:
@@ -8,6 +8,6 @@ environment:
 
 dev_dependencies:
   austerity: ^1.1.0
-  lints: ^2.0.0
+  lints: ^3.0.0
   meta: ^1.7.0
   test: ^1.16.0

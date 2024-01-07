@@ -13,8 +13,8 @@ void main() {
   group('Theme Switcher App', () {
     setUp(() {
       //Replace the existing settings service
-      builder.addSingletonService<SettingsService>(
-          FakeSettingsService(isLightMode: false));
+      builder.addSingleton<SettingsService>(
+          (c) => FakeSettingsService(isLightMode: false));
 
       serviceLocator = builder.toContainer();
     });

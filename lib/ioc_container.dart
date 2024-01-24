@@ -21,11 +21,7 @@ class ServiceDefinition<T> {
     this.isSingleton = false,
     this.dispose,
     this.disposeAsync,
-  })  : assert(
-          !isSingleton || dispose == null,
-          'Singleton factories cannot have a dispose method',
-        ),
-        assert(
+  }) : assert(
           dispose == null || disposeAsync == null,
           "Service definitions can't have both dispose and disposeAsync",
         );
@@ -154,12 +150,14 @@ class IocContainerBuilder {
   void addSingleton<T>(
     T Function(
       IocContainer container,
-    ) factory,
-  ) =>
+    ) factory, {
+    void Function(T service)? dispose,
+  }) =>
       addServiceDefinition<T>(
         ServiceDefinition<T>(
           (container) => factory(container),
           isSingleton: true,
+          dispose: dispose,
         ),
       );
 
@@ -196,12 +194,14 @@ class IocContainerBuilder {
   void addSingletonAsync<T>(
     Future<T> Function(
       IocContainer container,
-    ) factory,
-  ) =>
+    ) factory, {
+    Future<void> Function(T service)? disposeAsync,
+  }) =>
       addServiceDefinition<Future<T>>(
         ServiceDefinition<Future<T>>(
           isSingleton: true,
           (container) async => factory(container),
+          disposeAsync: (service) async => disposeAsync?.call(await service),
         ),
       );
 }

@@ -33,6 +33,8 @@ extension TestIocContainerExtensions on IocContainer {
 class A {
   A(this.name);
   final String name;
+  bool disposed = false;
+  void dispose() => disposed = true;
 }
 
 class B {
@@ -157,7 +159,10 @@ void main() {
   test('With Scoping And Disposing', () async {
     final a = A('a');
     final builder = IocContainerBuilder()
-      ..addSingleton((c) => a)
+      ..addSingleton<A>(
+        (c) => a,
+        dispose: (a) => a.dispose(),
+      )
       ..add((i) => B(i.get<A>()))
       ..add<C>(
         (i) => C(i.get<B>()),
@@ -177,6 +182,7 @@ void main() {
     //This also works if we don't use await above
     //await Future<void>.delayed(const Duration(milliseconds: 100));
 
+    expect(a.disposed, true);
     expect(d.disposed, true);
     expect(d.c.disposed, true);
     expect(container<D>().disposed, false);
@@ -878,7 +884,7 @@ void main() {
     );
   });
 
-  test('Test addAsyncSingleton', () async {
+  test('Test addAsyncSingleton With Dispose', () async {
     var futureCounter = 0;
 
     final builder = IocContainerBuilder()
@@ -892,6 +898,7 @@ void main() {
             return A('a');
           },
         ),
+        disposeAsync: (service) async => service.dispose(),
       );
     final container = builder.toContainer();
 
@@ -911,5 +918,10 @@ void main() {
 
     //Expect the future only ran once
     expect(futureCounter, 1);
+
+    final scope = container.scoped(useExistingSingletons: true);
+    await scope.dispose();
+
+    expect(as[0].disposed, true);
   });
 }

@@ -70,3 +70,5 @@ longer has the @immutable annotation. See the documentation about immutability.
 - Fix icon link
 ## 2.0.0-beta
 - Async locking. See documentation
+## 2.0.1-beta
+- Fixes and issue where it was impossible to set the dispose method unless you create fresh factories for the scopes

@@ -884,7 +884,7 @@ void main() {
     );
   });
 
-  test('Test addAsyncSingleton', () async {
+  test('Test addAsyncSingleton With Dispose', () async {
     var futureCounter = 0;
 
     final builder = IocContainerBuilder()
@@ -898,6 +898,7 @@ void main() {
             return A('a');
           },
         ),
+        disposeAsync: (service) async => service.dispose(),
       );
     final container = builder.toContainer();
 
@@ -917,5 +918,10 @@ void main() {
 
     //Expect the future only ran once
     expect(futureCounter, 1);
+
+    final scope = container.scoped(useExistingSingletons: true);
+    await scope.dispose();
+
+    expect(as[0].disposed, true);
   });
 }
